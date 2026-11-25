@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Customers | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Customers</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>State</th>
+        <th>GSTIN</th>
+        <th>Salesman</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cust in customers %}
+        <tr>
+          <td><code>{{ cust.code }}</code></td>
+          <td>{{ cust.name }}</td>
+          <td>{{ cust.state }}</td>
+          <td>{{ cust.gstin }}</td>
+          <td>{{ cust.assigned_salesman.username|default:"-" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="muted">No customers found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

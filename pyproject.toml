@@ -1,0 +1,17 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+pythonpath = ["backend"]
+testpaths = ["backend/tests"]
+python_files = ["test_*.py"]
+addopts = "-p no:flask"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config"]

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Masters | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Items</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>SKU</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Base Unit</th>
+        <th>Display Unit</th>
+        <th>HSN</th>
+        <th class="num">GST %</th>
+        <th class="num">Tolerance %</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        <tr>
+          <td><code>{{ item.sku }}</code></td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.get_item_type_display }}</td>
+          <td>{{ item.base_unit.code }}</td>
+          <td>{{ item.preferred_display_unit.code }}</td>
+          <td>{{ item.hsn }}</td>
+          <td class="num">{{ item.gst_rate }}</td>
+          <td class="num">{{ item.effective_tolerance_pct }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="8" class="muted">No items found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>Unit Conversions</h3>
+    <table>
+      <thead>
+        <tr><th>From</th><th>To</th><th class="num">Factor</th></tr>
+      </thead>
+      <tbody>
+        {% for conv in conversions %}
+          <tr>
+            <td>{{ conv.from_unit.code }}</td>
+            <td>{{ conv.to_unit.code }}</td>
+            <td class="num">{{ conv.factor }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h3>Active Price List</h3>
+    <table>
+      <thead>
+        <tr><th>Item</th><th>Customer</th><th>Unit</th><th class="num">Rate (Rs)</th></tr>
+      </thead>
+      <tbody>
+        {% for p in prices %}
+          <tr>
+            <td>{{ p.item.name }}</td>
+            <td>{{ p.customer.name|default:"Default" }}</td>
+            <td>{{ p.unit.code }}</td>
+            <td class="num">{{ p.rate }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
