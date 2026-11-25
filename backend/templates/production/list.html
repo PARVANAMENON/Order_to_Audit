@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Production Runs | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+  <div>
+    <h2 style="margin-bottom:0.25rem;">Production Runs</h2>
+    <p class="muted" style="margin:0;">Planned vs actual BOM consumption, yield variance flags, and ledger postings.</p>
+  </div>
+  {% if user.role == "production" or user.role == "admin" or user.is_superuser %}
+    <a href="/production/new/" class="btn">+ New Production Run</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Run #</th>
+        <th>Date</th>
+        <th>Product / BOM</th>
+        <th class="num">Expected</th>
+        <th class="num">Actual Good</th>
+        <th class="num">Yield Var %</th>
+        <th class="num">Material Cost</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for run in runs %}
+        <tr class="{% if run.yield_flagged %}flagged-row{% endif %}">
+          <td><a href="/production/{{ run.id }}/"><strong>{{ run.run_number }}</strong></a></td>
+          <td>{{ run.run_date }}</td>
+          <td>{{ run.bom.product.name }} ({{ run.batches }} batch)</td>
+          <td class="num">{{ run.expected_output }}</td>
+          <td class="num">{{ run.actual_output }}</td>
+          <td class="num">
+            {% if run.yield_variance_pct is not None %}
+              {{ run.yield_variance_pct }}%
+              {% if run.yield_flagged %}<span class="badge badge-flag">FLAG</span>{% endif %}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td class="num">Rs {{ run.material_cost }}</td>
+          <td>
+            {% if run.status == "posted" %}
+              <span class="badge badge-ok">Posted</span>
+            {% else %}
+              <span class="badge badge-warn">Draft</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="8" class="muted">No production runs recorded yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

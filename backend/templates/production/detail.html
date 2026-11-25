@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}{{ run.run_number }} | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+    <div>
+      <h2 style="margin-bottom:0.25rem;">{{ run.run_number }} — {{ run.bom.product.name }}</h2>
+      <p class="muted" style="margin:0;">
+        Date: {{ run.run_date }} | Batches: {{ run.batches }} |
+        Expected Output: <strong>{{ run.expected_output }} {{ run.bom.product.base_unit.code }}</strong> |
+        Status:
+        {% if run.status == "posted" %}
+          <span class="badge badge-ok">Posted</span>
+        {% else %}
+          <span class="badge badge-warn">Draft</span>
+        {% endif %}
+      </p>
+    </div>
+    <div style="text-align:right;">
+      <div><strong>Material Cost: Rs {{ run.material_cost }}</strong></div>
+      {% if run.yield_variance_pct is not None %}
+        <div>
+          Yield Variance: <strong>{{ run.yield_variance_pct }}%</strong>
+          {% if run.yield_flagged %}
+            <span class="badge badge-flag">YIELD FLAGGED</span>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<form method="post" action="/production/{{ run.id }}/post/">
+  {% csrf_token %}
+  <div class="card">
+    <h3>Output &amp; Wastage</h3>
+    <div class="grid">
+      <div class="form-row">
+        <label for="actual_output">Actual Good Output ({{ run.bom.product.base_unit.code }})</label>
+        <input type="text" name="actual_output" id="actual_output" value="{{ run.actual_output }}" {% if not can_edit %}readonly{% endif %} required>
+      </div>
+      <div class="form-row">
+        <label for="wastage">Wastage</label>
+        <input type="text" name="wastage" id="wastage" value="{{ run.wastage }}" {% if not can_edit %}readonly{% endif %}>
+      </div>
+      <div class="form-row">
+        <label for="damaged_packaging">Damaged Packaging</label>
+        <input type="text" name="damaged_packaging" id="damaged_packaging" value="{{ run.damaged_packaging }}" {% if not can_edit %}readonly{% endif %}>
+      </div>
+    </div>
+    <div class="form-row">
+      <label for="notes">Notes</label>
+      <input type="text" name="notes" id="notes" value="{{ run.notes }}" {% if not can_edit %}readonly{% endif %}>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Planned vs Actual Material &amp; Packaging</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th class="num">Planned (Display)</th>
+          <th>Actual Input</th>
+          <th>Unit</th>
+          <th class="num">Actual (Base)</th>
+          <th class="num">Variance %</th>
+          <th class="num">Tolerance %</th>
+          <th class="num">Line Cost (Rs)</th>
+          <th>Flag</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+          <tr class="{% if line.flagged %}flagged-row{% endif %}">
+            <td>{{ line.item.sku }} - {{ line.item.name }}</td>
+            <td class="num">{{ line.planned_in_unit }} {{ line.unit.code }}</td>
+            <td style="min-width:120px;">
+              {% if can_edit %}
+                <input type="text" name="actual_qty_{{ line.id }}" value="{{ line.actual_in_unit }}" required>
+              {% else %}
+                {{ line.actual_in_unit }}
+              {% endif %}
+            </td>
+            <td style="min-width:90px;">
+              {% if can_edit %}
+                <select name="unit_{{ line.id }}">
+                  {% for u in units %}
+                    <option value="{{ u.id }}" {% if u.id == line.unit_id %}selected{% endif %}>{{ u.code }}</option>
+                  {% endfor %}
+                </select>
+              {% else %}
+                {{ line.unit.code }}
+              {% endif %}
+            </td>
+            <td class="num">{{ line.actual_qty }} {{ line.item.base_unit.code }}</td>
+            <td class="num">
+              {% if line.variance_pct is not None %}{{ line.variance_pct }}%{% else %}-{% endif %}
+            </td>
+            <td class="num">{{ line.item.effective_tolerance_pct }}%</td>
+            <td class="num">
+              {% if line.line_cost is not None %}{{ line.line_cost }}{% else %}-{% endif %}
+            </td>
+            <td>
+              {% if line.flagged %}
+                <span class="badge badge-flag">FLAGGED</span>
+              {% elif line.variance_pct is not None %}
+                <span class="badge badge-ok">OK</span>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if can_edit %}
+      <div style="margin-top:1rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
+        <button type="submit" name="action" value="save" class="btn btn-secondary">Save Actuals</button>
+        <button type="submit" name="action" value="post" class="btn">
+          {% if run.status == "posted" %}Re-post Run (Reverse Old &amp; Write New){% else %}Post Run to StockLedger{% endif %}
+        </button>
+      </div>
+    {% endif %}
+  </div>
+</form>
+
+{% if ledger_rows %}
+<div class="card">
+  <h3>Linked StockLedger Movements</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Item</th>
+        <th>Type</th>
+        <th class="num">Qty (Base)</th>
+        <th class="num">Rate / Base</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in ledger_rows %}
+        <tr>
+          <td>{{ row.date|date:"Y-m-d H:i" }}</td>
+          <td>{{ row.item.sku }}</td>
+          <td>{{ row.get_source_type_display }}</td>
+          <td class="num">{{ row.qty }} {{ row.item.base_unit.code }}</td>
+          <td class="num">{{ row.unit_rate }}</td>
+          <td class="muted">{{ row.notes }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

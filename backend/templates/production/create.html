@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}New Production Run | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card" style="max-width:560px;">
+  <h2>Create Production Run</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-row">
+      <label for="bom_id">BOM</label>
+      <select name="bom_id" id="bom_id" required>
+        {% for bom in boms %}
+          <option value="{{ bom.id }}">{{ bom.product.name }} — {{ bom.name }} (yield {{ bom.expected_yield }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="grid">
+      <div class="form-row">
+        <label for="batches">Batches</label>
+        <input type="text" name="batches" id="batches" value="1" required>
+      </div>
+      <div class="form-row">
+        <label for="run_date">Run Date</label>
+        <input type="date" name="run_date" id="run_date" value="{{ today }}" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <label for="notes">Notes (Optional)</label>
+      <textarea name="notes" id="notes" rows="2"></textarea>
+    </div>
+    <button type="submit" class="btn">Create Run</button>
+    <a href="/production/" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}
