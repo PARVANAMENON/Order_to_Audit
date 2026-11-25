@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Purchases | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+  <div>
+    <h2 style="margin-bottom:0.25rem;">Supplier Purchases</h2>
+    <p class="muted" style="margin:0;">Posted purchases add stock to the ledger and update weighted-average cost.</p>
+  </div>
+  {% if user.role == "production" or user.role == "admin" or user.is_superuser %}
+    <a href="/purchasing/new/" class="btn">+ New Purchase</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Doc</th>
+        <th>Date</th>
+        <th>Supplier</th>
+        <th>Invoice #</th>
+        <th>Status</th>
+        <th class="num">Total (Rs)</th>
+        <th>Posted By</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pur in purchases %}
+        <tr>
+          <td><a href="/purchasing/{{ pur.id }}/">PUR-{{ pur.id }}</a></td>
+          <td>{{ pur.date }}</td>
+          <td>{{ pur.supplier.name }}</td>
+          <td>{{ pur.invoice_number }}</td>
+          <td>
+            {% if pur.status == "posted" %}
+              <span class="badge badge-ok">Posted</span>
+            {% else %}
+              <span class="badge badge-warn">Draft</span>
+            {% endif %}
+          </td>
+          <td class="num">{{ pur.total_amount }}</td>
+          <td>{{ pur.posted_by.username|default:"-" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="muted">No purchases recorded yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

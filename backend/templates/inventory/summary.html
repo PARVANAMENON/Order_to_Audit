@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Stock Summary | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+  <div>
+    <h2 style="margin-bottom:0.25rem;">Stock Summary (Ledger-Derived)</h2>
+    <p class="muted" style="margin:0;">Every balance is computed live as SUM(StockLedger.qty) with weighted-average cost.</p>
+  </div>
+  <div style="display:flex; gap:0.5rem;">
+    <a href="/inventory/ledger/" class="btn btn-secondary">View Stock Ledger</a>
+    {% if user.role == "production" or user.role == "admin" or user.is_superuser %}
+      <a href="/inventory/adjust/" class="btn">Manual Adjustment</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>SKU</th>
+        <th>Item</th>
+        <th>Type</th>
+        <th class="num">Balance (Display)</th>
+        <th class="num">Balance (Base)</th>
+        <th class="num">WAC (Display)</th>
+        <th class="num">Stock Value (Rs)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          <td><code>{{ row.item.sku }}</code></td>
+          <td>{{ row.item.name }}</td>
+          <td>{{ row.item.get_item_type_display }}</td>
+          <td class="num"><strong>{{ row.display_balance }} {{ row.display_unit.code }}</strong></td>
+          <td class="num">{{ row.base_balance }} {{ row.item.base_unit.code }}</td>
+          <td class="num">Rs {{ row.display_wac }} / {{ row.display_unit.code }}</td>
+          <td class="num">Rs {{ row.stock_value }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="muted">No items found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

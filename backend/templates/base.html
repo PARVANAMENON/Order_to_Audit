@@ -123,6 +123,11 @@
         <a href="/">Home</a>
         <a href="/masters/items/">Masters</a>
         <a href="/masters/customers/">Customers</a>
+        {% if user.role != "salesman" %}
+          <a href="/inventory/">Stock</a>
+          <a href="/inventory/ledger/">Ledger</a>
+          <a href="/purchasing/">Purchases</a>
+        {% endif %}
         {% block extra_nav %}{% endblock %}
       {% endif %}
     </div>

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Adjustment ADJ-{{ adjustment.id }} | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Adjustment ADJ-{{ adjustment.id }}</h2>
+  <p><strong>Item:</strong> {{ adjustment.item.sku }} - {{ adjustment.item.name }}</p>
+  <p><strong>Input Qty:</strong> {{ adjustment.input_qty }} {{ adjustment.input_unit.code }} (Base: {{ adjustment.qty }} {{ adjustment.item.base_unit.code }})</p>
+  <p><strong>Unit Rate (Base):</strong> {{ adjustment.unit_rate }}</p>
+  <p><strong>Reason:</strong> {{ adjustment.reason }}</p>
+  <p><strong>Adjusted By:</strong> {{ adjustment.adjusted_by.username }} on {{ adjustment.adjusted_at|date:"Y-m-d H:i" }}</p>
+  <a href="/inventory/ledger/" class="btn btn-secondary">Back to Ledger</a>
+</div>
+{% endblock %}

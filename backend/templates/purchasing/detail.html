@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}PUR-{{ purchase.id }} | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+  <div>
+    <h2 style="margin-bottom:0.25rem;">Purchase PUR-{{ purchase.id }}</h2>
+    <p class="muted" style="margin:0;">
+      Supplier: <strong>{{ purchase.supplier.name }}</strong> |
+      Invoice: <strong>{{ purchase.invoice_number }}</strong> |
+      Date: {{ purchase.date }} |
+      Status:
+      {% if purchase.status == "posted" %}
+        <span class="badge badge-ok">Posted</span>
+      {% else %}
+        <span class="badge badge-warn">Draft</span>
+      {% endif %}
+    </p>
+  </div>
+  {% if purchase.status == "draft" %}
+    {% if user.role == "production" or user.role == "admin" or user.is_superuser %}
+      <form method="post" action="/purchasing/{{ purchase.id }}/post/" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="btn">Post to StockLedger</button>
+      </form>
+    {% endif %}
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Purchase Lines</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th class="num">Qty</th>
+        <th>Unit</th>
+        <th class="num">Rate / Unit</th>
+        <th class="num">Line Total (Rs)</th>
+        <th>Batch</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in lines %}
+        <tr>
+          <td>{{ line.item.sku }} - {{ line.item.name }}</td>
+          <td class="num">{{ line.qty }}</td>
+          <td>{{ line.unit.code }}</td>
+          <td class="num">{{ line.unit_rate }}</td>
+          <td class="num">{{ line.line_total }}</td>
+          <td>{{ line.batch|default:"-" }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if ledger_rows %}
+<div class="card">
+  <h3>Posted Ledger Rows</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Item</th>
+        <th class="num">Qty (Base)</th>
+        <th class="num">Rate / Base</th>
+        <th>Posted By</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in ledger_rows %}
+        <tr>
+          <td>{{ row.date|date:"Y-m-d H:i" }}</td>
+          <td>{{ row.item.sku }}</td>
+          <td class="num">{{ row.qty }} {{ row.item.base_unit.code }}</td>
+          <td class="num">{{ row.unit_rate }}</td>
+          <td>{{ row.user.username }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

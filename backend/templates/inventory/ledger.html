@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Stock Ledger | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Stock Ledger</h2>
+  <form method="get" style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:end;">
+    <div style="min-width:220px;">
+      <label for="item">Item</label>
+      <select name="item" id="item">
+        <option value="">All items</option>
+        {% for it in items %}
+          <option value="{{ it.id }}" {% if selected_item == it.id|stringformat:"s" %}selected{% endif %}>
+            {{ it.sku }} - {{ it.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="min-width:200px;">
+      <label for="source_type">Source Type</label>
+      <select name="source_type" id="source_type">
+        <option value="">All sources</option>
+        {% for val, label in source_types %}
+          <option value="{{ val }}" {% if selected_source_type == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <button type="submit" class="btn">Filter</button>
+      <a href="/inventory/ledger/" class="btn btn-secondary">Reset</a>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Item</th>
+        <th class="num">Qty (Base Unit)</th>
+        <th class="num">Rate / Base Unit</th>
+        <th>Source</th>
+        <th>User</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in entries %}
+        <tr>
+          <td>{{ row.date|date:"Y-m-d H:i" }}</td>
+          <td>{{ row.item.sku }} - {{ row.item.name }}</td>
+          <td class="num"><strong>{{ row.qty }}</strong> {{ row.item.base_unit.code }}</td>
+          <td class="num">{{ row.unit_rate }}</td>
+          <td>
+            <a href="{{ row.source_url }}">{{ row.get_source_type_display }} ({{ row.source_ref|default:row.source_id }})</a>
+          </td>
+          <td>{{ row.user.username }}</td>
+          <td class="muted">{{ row.notes }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="muted">No ledger movements found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

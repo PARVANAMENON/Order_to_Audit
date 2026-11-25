@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Manual Stock Adjustment | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card" style="max-width:640px;">
+  <h2>Post Manual Stock Adjustment</h2>
+  <p class="muted">Enter positive or negative quantity. A reason is mandatory and every adjustment posts to the StockLedger.</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-row">
+      <label for="item_id">Item</label>
+      <select name="item_id" id="item_id" required>
+        {% for item in items %}
+          <option value="{{ item.id }}">{{ item.sku }} - {{ item.name }} (base: {{ item.base_unit.code }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="grid">
+      <div class="form-row">
+        <label for="qty">Signed Quantity (e.g. -2.5 or 5)</label>
+        <input type="text" name="qty" id="qty" required placeholder="-1.500">
+      </div>
+      <div class="form-row">
+        <label for="unit_id">Unit</label>
+        <select name="unit_id" id="unit_id" required>
+          {% for unit in units %}
+            <option value="{{ unit.id }}">{{ unit.code }} ({{ unit.name }})</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label for="unit_rate">Rate per Unit (optional; defaults to current WAC)</label>
+      <input type="text" name="unit_rate" id="unit_rate" placeholder="Leave blank to use current WAC">
+    </div>
+    <div class="form-row">
+      <label for="reason">Reason (Mandatory)</label>
+      <textarea name="reason" id="reason" rows="2" required placeholder="Physical count variance / spoilage"></textarea>
+    </div>
+    <button type="submit" class="btn">Post Adjustment</button>
+    <a href="/inventory/" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Recent Adjustments</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Ref</th>
+        <th>Date</th>
+        <th>Item</th>
+        <th class="num">Qty</th>
+        <th>Reason</th>
+        <th>By</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for adj in recent_adjustments %}
+        <tr>
+          <td><a href="/inventory/adjust/{{ adj.id }}/">ADJ-{{ adj.id }}</a></td>
+          <td>{{ adj.adjusted_at|date:"Y-m-d H:i" }}</td>
+          <td>{{ adj.item.sku }}</td>
+          <td class="num">{{ adj.input_qty }} {{ adj.input_unit.code }}</td>
+          <td>{{ adj.reason }}</td>
+          <td>{{ adj.adjusted_by.username }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="muted">No adjustments yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
