@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Invoices | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card"><h2>Tax Invoices</h2></div>
+<div class="card"><table>
+  <thead><tr><th>Invoice #</th><th>Date</th><th>Customer</th><th class="num">Taxable</th><th class="num">Tax</th><th class="num">Total (Rs)</th><th>Status</th><th>PDF</th></tr></thead>
+  <tbody>{% for inv in invoices %}
+  <tr>
+    <td><a href="/sales/invoices/{{ inv.id }}/">{{ inv.fy_number }}</a></td>
+    <td>{{ inv.invoice_date }}</td><td>{{ inv.customer.name }}</td>
+    <td class="num">{{ inv.taxable_value }}</td>
+    <td class="num">{{ inv.cgst|add:inv.sgst|add:inv.igst }}</td>
+    <td class="num"><strong>{{ inv.total_amount }}</strong></td>
+    <td><span class="badge {% if inv.status == 'active' %}badge-ok{% else %}badge-flag{% endif %}">{{ inv.get_status_display }}</span></td>
+    <td><a href="/sales/invoices/{{ inv.id }}/pdf/" target="_blank" class="btn" style="padding:.2rem .5rem;font-size:.8rem;">PDF</a></td>
+  </tr>
+  {% empty %}<tr><td colspan="8" class="muted">No invoices yet.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

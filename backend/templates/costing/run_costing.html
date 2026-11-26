@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Costing: {{ run.run_number }} | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Cost Analysis — {{ run.run_number }} ({{ run.bom.product.name }})</h2>
+  <div class="grid">
+    <div><p><strong>Material Cost</strong><br><span style="font-size:1.5rem;">Rs {{ breakdown.material_cost }}</span></p></div>
+    <div><p><strong>Overhead</strong><br><span style="font-size:1.5rem;">Rs {{ breakdown.overhead }}</span></p></div>
+    <div><p><strong>Total Run Cost</strong><br><span style="font-size:1.5rem;">Rs {{ breakdown.total_cost }}</span></p></div>
+    <div><p><strong>Good Packets</strong><br><span style="font-size:1.5rem;">{{ breakdown.good_packets }}</span></p></div>
+    <div><p><strong>Cost / Packet</strong><br><span style="font-size:1.5rem;">Rs {{ breakdown.cost_per_packet }}</span></p></div>
+    <div><p><strong>Selling Price</strong><br><span style="font-size:1.5rem;">Rs {{ breakdown.selling_price }}</span></p></div>
+    <div><p><strong>Margin</strong><br><span style="font-size:1.5rem;color:{% if breakdown.margin > 0 %}green{% else %}red{% endif %};">Rs {{ breakdown.margin }} ({{ breakdown.margin_pct }}%)</span></p></div>
+  </div>
+</div>
+
+{% if user.role == "production" or user.role == "admin" or user.is_superuser %}
+<div class="card"><h3>Add Overhead Entry</h3>
+<form method="post">{% csrf_token %}
+  <div class="grid">
+    <div class="form-row"><label>Type</label>
+      <select name="overhead_type" required>{% for v,l in overhead_types %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+    <div class="form-row"><label>Amount (Rs)</label><input type="text" name="amount" required placeholder="1200.00"></div>
+    <div class="form-row"><label>Description</label><input type="text" name="description" placeholder="Daily labour wages"></div>
+  </div>
+  <button type="submit" class="btn">Add Overhead</button>
+</form></div>{% endif %}
+
+<div class="card"><h3>Overhead Entries</h3>
+<table><thead><tr><th>Type</th><th class="num">Amount (Rs)</th><th>Description</th><th>Entered By</th></tr></thead>
+<tbody>{% for oh in overheads %}
+  <tr><td>{{ oh.get_overhead_type_display }}</td><td class="num">{{ oh.amount }}</td><td>{{ oh.description }}</td><td>{{ oh.entered_by.username }}</td></tr>
+{% empty %}<tr><td colspan="4" class="muted">No overhead entries yet.</td></tr>{% endfor %}
+</tbody></table></div>
+
+<a href="/production/{{ run.id }}/" class="btn btn-secondary">Back to Run</a>
+{% endblock %}
+

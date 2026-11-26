@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-order_to_audit}
       POSTGRES_USER: ${POSTGRES_USER:-ota_user}
@@ -15,25 +16,62 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   app:
     build: .
+    restart: unless-stopped
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-insecure-change-me-in-production}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-}
+      DJANGO_LOG_LEVEL: ${DJANGO_LOG_LEVEL:-INFO}
+      DJANGO_SECURE_SSL_REDIRECT: ${DJANGO_SECURE_SSL_REDIRECT:-0}
+      DJANGO_TRUST_PROXY_HEADERS: ${DJANGO_TRUST_PROXY_HEADERS:-0}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-1}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
       USE_POSTGRES: "1"
       POSTGRES_DB: ${POSTGRES_DB:-order_to_audit}
       POSTGRES_USER: ${POSTGRES_USER:-ota_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ota_password}
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
+      REDIS_URL: redis://redis:6379/1
     ports:
       - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
-      - .:/app
+      - backups:/app/backups
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3).status == 200 else 1)",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
 
 volumes:
   pgdata:
+  redisdata:
+  backups:

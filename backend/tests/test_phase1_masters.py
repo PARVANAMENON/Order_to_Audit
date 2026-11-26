@@ -37,6 +37,44 @@ def test_unit_conversions_kg_g_l_ml_carton_packet(seeded_db):
 
 
 @pytest.mark.django_db
+def test_demo_profile_resets_to_clean_baseline(seeded_db):
+    from django.apps import apps
+
+    from apps.masters.management.commands.seed_benchmark import Command
+    from apps.sales.models import Order
+    from apps.sales.services import submit_order
+
+    call_command("seed_benchmark", "--profile", "demo")
+    transactional = [apps.get_model(*pair) for pair in Command.TRANSACTION_MODELS]
+    baseline = [model.objects.count() for model in transactional]
+    assert Order.objects.count() == 2
+    assert sum(baseline) > 0
+
+    submit_order(
+        customer=Customer.objects.get(code="CUST-RET-A"),
+        salesman=seeded_db["salesmanA"],
+        lines=[
+            {
+                "item": Item.objects.get(sku="FG-MURUKKU-200G"),
+                "qty": Decimal("5"),
+                "unit": Unit.objects.get(code="packet"),
+                "unit_price": Decimal("50.00"),
+            }
+        ],
+        notes="Scratch order that the demo reset must remove",
+    )
+    assert Order.objects.filter(notes__startswith="Scratch order").exists()
+
+    call_command("seed_benchmark", "--profile", "demo")
+
+    assert [model.objects.count() for model in transactional] == baseline
+    assert not Order.objects.filter(notes__startswith="Scratch order").exists()
+    assert Item.objects.count() == 6
+    assert Customer.objects.count() == 2
+    assert PriceList.objects.count() == 1
+
+
+@pytest.mark.django_db
 def test_seed_benchmark_is_idempotent(seeded_db):
     call_command("seed_benchmark")
 

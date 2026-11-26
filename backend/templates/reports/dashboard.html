@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="hero">
+  <span class="hero-eyebrow"><span class="pulse-dot"></span> Live operations</span>
+  <h1>Dashboard</h1>
+  <p>Today at a glance — incoming orders, approvals waiting, production variance flags and receivables.</p>
+  <div class="hero-actions">
+    <a href="/reports/sales/" class="btn">Sales Register</a>
+    <a href="/reports/outstanding/" class="btn btn-secondary">Outstanding Dues</a>
+  </div>
+</div>
+
+<div class="stat-grid" style="margin-bottom:1.25rem;">
+  <div class="stat stat--indigo">
+    <div class="stat-label">
+      <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-orders"/></svg>
+      Today's Orders
+    </div>
+    <div class="stat-value">{{ todays_orders }}</div>
+    <div class="stat-hint">{{ today }}</div>
+  </div>
+  <div class="stat stat--amber">
+    <div class="stat-label">
+      <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-list"/></svg>
+      Pending Approval
+    </div>
+    <div class="stat-value">{{ pending_orders }}</div>
+    <div class="stat-hint">Submitted orders awaiting review</div>
+  </div>
+  <div class="stat {% if flagged_runs %}stat--rose{% else %}stat--teal{% endif %}">
+    <div class="stat-label">
+      <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-alert"/></svg>
+      Flagged Runs
+    </div>
+    <div class="stat-value">{{ flagged_runs }}</div>
+    <div class="stat-hint">Posted runs outside variance tolerance</div>
+  </div>
+  <div class="stat stat--teal">
+    <div class="stat-label">
+      <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-card"/></svg>
+      Total Outstanding
+    </div>
+    <div class="stat-value"><small>Rs</small> {{ total_outstanding }}</div>
+    <div class="stat-hint">Across active customers</div>
+  </div>
+</div>
+
+{% if low_stock_items %}
+<div class="card">
+  <div class="toolbar" style="margin-bottom:0.9rem;">
+    <div>
+      <h3 style="margin-bottom:0.15rem;">Low Stock Alerts</h3>
+      <p class="muted" style="margin:0;">Raw materials below 10 base units.</p>
+    </div>
+    <a href="/inventory/" class="btn btn-secondary btn-sm">Open Stock Summary</a>
+  </div>
+  <table>
+    <thead><tr><th>Item</th><th class="num">Balance (base unit)</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for row in low_stock_items %}
+        <tr>
+          <td>{{ row.item.name }} <span class="muted">· {{ row.item.sku }}</span></td>
+          <td class="num">{{ row.balance }} {{ row.item.base_unit.code }}</td>
+          <td><span class="badge badge-warn">Reorder soon</span></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="toolbar" style="margin-bottom:0.9rem;">
+    <div>
+      <h3 style="margin-bottom:0.15rem;">Jump back in</h3>
+      <p class="muted" style="margin:0;">Registers, reconciliation and the audit trail.</p>
+    </div>
+  </div>
+  <div class="grid">
+    <a href="/reports/sales/" class="workspace-card">
+      <span class="tile">SR</span>
+      <h3>Sales Register</h3>
+      <p class="muted">Invoices, GST split and dispatch status.</p>
+      <span class="arrow">Open →</span>
+    </a>
+    <a href="/reports/gst/" class="workspace-card">
+      <span class="tile">GS</span>
+      <h3>GST Summary</h3>
+      <p class="muted">CGST, SGST and IGST collected for the period.</p>
+      <span class="arrow">Open →</span>
+    </a>
+    <a href="/reports/outstanding/" class="workspace-card">
+      <span class="tile">AR</span>
+      <h3>Outstanding</h3>
+      <p class="muted">Receivables with 0–30 to 90+ ageing buckets.</p>
+      <span class="arrow">Open →</span>
+    </a>
+    <a href="/reports/production/" class="workspace-card">
+      <span class="tile">PV</span>
+      <h3>Variance Report</h3>
+      <p class="muted">Material, packaging and yield variances by run.</p>
+      <span class="arrow">Open →</span>
+    </a>
+    <a href="/audit/" class="workspace-card">
+      <span class="tile">AT</span>
+      <h3>Audit Trail</h3>
+      <p class="muted">Every significant write, with actor and before/after.</p>
+      <span class="arrow">Open →</span>
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -10,6 +10,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.accounts.models import User
+from apps.audit.services import log_action
 from apps.inventory.models import SourceType, StockLedger
 from apps.masters.models import Item
 from apps.masters.services import convert_quantity, convert_rate
@@ -70,4 +71,13 @@ def post_purchase(purchase: Purchase, user: User) -> Purchase:
     locked_purchase.posted_by = user
     locked_purchase.posted_at = timezone.now()
     locked_purchase.save(update_fields=["status", "posted_by", "posted_at"])
+    log_action(
+        user=user,
+        model_name="Purchase",
+        object_id=locked_purchase.id,
+        action="post_purchase",
+        before={"status": PurchaseStatus.DRAFT},
+        after={"status": locked_purchase.status, "total_amount": str(locked_purchase.total_amount)},
+        notes=f"PUR-{locked_purchase.id}",
+    )
     return locked_purchase

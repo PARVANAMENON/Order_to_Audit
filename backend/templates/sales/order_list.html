@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Orders | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem;">
+  <div><h2 style="margin-bottom:.25rem;">Sales Orders</h2>
+  <p class="muted" style="margin:0;">Orders placed by salesmen; admin approves and invoices.</p></div>
+  {% if user.role == "salesman" or user.role == "admin" or user.is_superuser %}
+  <a href="/sales/pwa/" class="btn btn-secondary">Field Capture</a>
+  <a href="/sales/orders/new/" class="btn">+ New Order</a>{% endif %}
+</div>
+<div class="card"><table>
+  <thead><tr><th>Doc</th><th>Date</th><th>Customer</th><th>Salesman</th><th>Status</th><th>Notes</th></tr></thead>
+  <tbody>
+  {% for o in orders %}
+  <tr>
+    <td><a href="/sales/orders/{{ o.id }}/">ORD-{{ o.id }}</a></td>
+    <td>{{ o.order_date }}</td>
+    <td>{{ o.customer.name }}</td>
+    <td>{{ o.salesman.username }}</td>
+    <td><span class="badge {% if o.status == 'approved' %}badge-ok{% elif o.status == 'rejected' %}badge-flag{% else %}badge-warn{% endif %}">{{ o.get_status_display }}</span></td>
+    <td class="muted">{{ o.notes|truncatechars:40 }}</td>
+  </tr>
+  {% empty %}<tr><td colspan="6" class="muted">No orders yet.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

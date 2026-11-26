@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}GST Summary | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>GST Summary</h2>
+  <form method="get" style="display:flex;gap:1rem;margin-bottom:1rem;">
+    <label>From <input type="date" name="date_from" value="{{ date_from }}"></label>
+    <label>To <input type="date" name="date_to" value="{{ date_to }}"></label>
+    <button type="submit" class="btn">Filter</button>
+  </form>
+  <table>
+    <thead><tr><th>Component</th><th class="num">Amount (Rs)</th></tr></thead>
+    <tbody>
+      <tr><td>Taxable Value</td><td class="num">{{ summary.taxable|floatformat:2 }}</td></tr>
+      <tr><td>CGST</td><td class="num">{{ summary.cgst|floatformat:2 }}</td></tr>
+      <tr><td>SGST</td><td class="num">{{ summary.sgst|floatformat:2 }}</td></tr>
+      <tr><td>IGST</td><td class="num">{{ summary.igst|floatformat:2 }}</td></tr>
+      <tr style="font-weight:bold;"><td>Total</td><td class="num">{{ summary.total|floatformat:2 }}</td></tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

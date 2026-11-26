@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}ORD-{{ order.id }} | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h2 style="margin-bottom:.25rem;">ORD-{{ order.id }} — {{ order.customer.name }}</h2>
+    <p class="muted" style="margin:0;">Date: {{ order.order_date }} | Salesman: {{ order.salesman.username }} |
+    Status: <span class="badge {% if order.status == 'approved' %}badge-ok{% elif order.status == 'rejected' %}badge-flag{% elif order.status == 'invoiced' %}badge-ok{% else %}badge-warn{% endif %}">{{ order.get_status_display }}</span></p>
+  </div>
+  {% if user.role == "admin" or user.is_superuser %}
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+    {% if order.status == "submitted" %}
+    <form id="approve-form" method="post" action="/sales/orders/{{ order.id }}/approve/">{% csrf_token %}
+      <button type="submit" class="btn">Approve</button></form>
+    <form method="post" action="/sales/orders/{{ order.id }}/reject/" style="display:flex;gap:.4rem;">{% csrf_token %}
+      <input type="text" name="rejection_reason" placeholder="Rejection reason" style="width:200px;" required>
+      <button type="submit" class="btn btn-secondary">Reject</button></form>
+    {% endif %}
+    {% if order.status == "approved" %}
+    <form method="post" action="/sales/orders/{{ order.id }}/invoice/">{% csrf_token %}
+      <button type="submit" class="btn">Create Invoice</button></form>
+    {% endif %}
+  </div>{% endif %}
+</div>
+
+{% if shortages %}
+<div class="card" style="background:#fff1f2;border-color:#fecdd3;">
+  <strong>Stock Shortages:</strong>
+  {% for s in shortages %}
+  <span class="badge badge-flag">{{ s.sku }}: short {{ s.shortage }}</span>
+  {% endfor %}
+</div>{% endif %}
+
+{% if order.rejection_reason %}
+<div class="card" style="background:#fff1f2;"><strong>Rejection reason:</strong> {{ order.rejection_reason }}</div>{% endif %}
+
+<div class="card"><h3>Order Lines</h3>
+{% if can_adjust %}<p class="muted">Edit the approved quantity on any line, then press Approve above.</p>{% endif %}
+<table><thead><tr><th>Item</th><th class="num">Ordered Qty</th><th class="num">Approved Qty</th><th>Unit</th><th class="num">Price</th><th class="num">Taxable (Rs)</th></tr></thead>
+<tbody>{% for line in lines %}
+  <tr>
+    <td>{{ line.item.sku }} - {{ line.item.name }}</td>
+    <td class="num">{{ line.qty }} {{ line.unit.code }}</td>
+    <td class="num">
+      {% if can_adjust %}
+      <input type="text" name="adj_qty_{{ line.id }}" value="{{ line.effective_qty }}"
+             form="approve-form" aria-label="Approved quantity" style="width:90px;">
+      {% else %}{{ line.effective_qty }}{% endif %}
+    </td>
+    <td>{{ line.unit.code }}</td>
+    <td class="num">{{ line.unit_price }}</td>
+    <td class="num">{{ line.line_taxable }}</td>
+  </tr>
+{% empty %}<tr><td colspan="6" class="muted">No lines.</td></tr>{% endfor %}
+</tbody></table></div>
+
+{% if order.invoice %}
+<div class="card"><p><strong>Invoice:</strong> <a href="/sales/invoices/{{ order.invoice.id }}/">{{ order.invoice.fy_number }}</a> — Rs {{ order.invoice.total_amount }}</p></div>{% endif %}
+{% endblock %}

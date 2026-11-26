@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Stock Ledger Report | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Stock Ledger Report</h2>
+  <form method="get" style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+    <label>Item
+      <select name="item_id">
+        <option value="">-- Select --</option>
+        {% for it in items %}<option value="{{ it.id }}" {% if selected_item and selected_item.id == it.id %}selected{% endif %}>{{ it.sku }} — {{ it.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>From <input type="date" name="date_from" value="{{ date_from }}"></label>
+    <label>To <input type="date" name="date_to" value="{{ date_to }}"></label>
+    <button type="submit" class="btn">Filter</button>
+  </form>
+  {% if selected_item %}
+  <table>
+    <thead><tr><th>Date</th><th>Source</th><th class="num">Qty</th><th class="num">Rate</th><th>Notes</th></tr></thead>
+    <tbody>{% for row in ledger %}
+      <tr>
+        <td>{{ row.date|date:"Y-m-d H:i" }}</td>
+        <td><a href="{{ row.source_url }}">{{ row.get_source_type_display }} #{{ row.source_id }}</a></td>
+        <td class="num">{{ row.qty }}</td>
+        <td class="num">{{ row.unit_rate }}</td>
+        <td>{{ row.notes }}</td>
+      </tr>
+    {% empty %}<tr><td colspan="5" class="muted">No entries.</td></tr>{% endfor %}</tbody>
+  </table>
+  {% endif %}
+</div>
+{% endblock %}

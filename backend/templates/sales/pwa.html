@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+{% block title %}Field Order Capture | Order-to-Audit{% endblock %}
+{% block extra_head %}
+  <link rel="manifest" href="/sales/manifest.webmanifest">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+{% endblock %}
+{% block content %}
+<div class="card" style="max-width:820px;">
+  <h2 style="margin-bottom:.25rem;">Field Order Capture</h2>
+  <p class="muted" style="margin-top:0;">
+    Mobile order entry that keeps working without a network. Submitted orders are queued on
+    this device and replayed with an idempotency key, so retries never create duplicates.
+  </p>
+  <div id="pwa-status" class="muted" aria-live="polite"></div>
+</div>
+
+<div class="card" style="max-width:820px;">
+  <form id="order-form">
+    <div class="grid">
+      <div class="form-row">
+        <label for="customer">Customer</label>
+        <select id="customer" name="customer_id" required></select>
+      </div>
+      <div class="form-row">
+        <label for="notes">Notes</label>
+        <input id="notes" type="text" name="notes" placeholder="Optional">
+      </div>
+    </div>
+
+    <h3>Lines</h3>
+    <table>
+      <thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Price / Unit (Rs)</th><th></th></tr></thead>
+      <tbody id="lines"></tbody>
+    </table>
+    <p><button type="button" id="add-line" class="btn btn-secondary">+ Add Line</button></p>
+
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+      <button type="submit" class="btn">Submit Order</button>
+      <button type="button" id="sync" class="btn btn-secondary">Sync Queued Orders</button>
+      <a href="/sales/orders/" class="btn btn-secondary">Order List</a>
+    </div>
+  </form>
+</div>
+
+<div class="card" style="max-width:820px;">
+  <h3>Queued on this device: <span id="queue-count">0</span></h3>
+  <ul id="queue" class="muted" style="margin-bottom:0;"></ul>
+</div>
+
+{{ customers_json|json_script:"pwa-customers" }}
+{{ items_json|json_script:"pwa-items" }}
+{{ units_json|json_script:"pwa-units" }}
+
+<script>
+(function () {
+  "use strict";
+
+  const CUSTOMERS = JSON.parse(document.getElementById("pwa-customers").textContent);
+  const ITEMS = JSON.parse(document.getElementById("pwa-items").textContent);
+  const UNITS = JSON.parse(document.getElementById("pwa-units").textContent);
+  const OUTBOX_KEY = "ota_sales_outbox";
+  const API_URL = "/api/orders/";
+
+  const form = document.getElementById("order-form");
+  const customerSel = document.getElementById("customer");
+  const notesInput = document.getElementById("notes");
+  const linesBody = document.getElementById("lines");
+  const statusEl = document.getElementById("pwa-status");
+  const queueEl = document.getElementById("queue");
+  const queueCount = document.getElementById("queue-count");
+
+  function setStatus(message, isError) {
+    statusEl.textContent = message;
+    statusEl.style.color = isError ? "#991b1b" : "#166534";
+  }
+
+  function make(tag, attrs, text) {
+    const node = document.createElement(tag);
+    Object.entries(attrs || {}).forEach(([key, value]) => node.setAttribute(key, value));
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function option(value, label, selected) {
+    const opt = make("option", { value: String(value) }, label);
+    if (selected) opt.selected = true;
+    return opt;
+  }
+
+  function addLine(preset) {
+    const data = preset || {};
+    const row = make("tr");
+
+    const itemCell = make("td");
+    const itemSel = make("select", { required: "required", "aria-label": "Item" });
+    itemSel.appendChild(option("", "-- Select --", false));
+    ITEMS.forEach((it) => {
+      itemSel.appendChild(
+        option(it.id, it.sku + " — " + it.name, String(it.id) === String(data.item_id || ""))
+      );
+    });
+    itemCell.appendChild(itemSel);
+    row.appendChild(itemCell);
+
+    const qtyCell = make("td");
+    const qtyInput = make("input", {
+      type: "text",
+      inputmode: "decimal",
+      required: "required",
+      placeholder: "150",
+      "aria-label": "Quantity",
+    });
+    if (data.qty) qtyInput.value = data.qty;
+    qtyCell.appendChild(qtyInput);
+    row.appendChild(qtyCell);
+
+    const unitCell = make("td");
+    const unitSel = make("select", { required: "required", "aria-label": "Unit" });
+    UNITS.forEach((u) => {
+      const selected =
+        String(u.id) === String(data.unit_id || (ITEMS[0] && ITEMS[0].unit_id) || "");
+      unitSel.appendChild(option(u.id, u.code, selected));
+    });
+    unitCell.appendChild(unitSel);
+    row.appendChild(unitCell);
+
+    const priceCell = make("td");
+    const priceInput = make("input", {
+      type: "text",
+      inputmode: "decimal",
+      required: "required",
+      placeholder: "50.00",
+      "aria-label": "Unit price",
+    });
+    priceInput.value = data.price || "0.00";
+    priceCell.appendChild(priceInput);
+    row.appendChild(priceCell);
+
+    const removeCell = make("td");
+    const removeBtn = make("button", { type: "button", class: "btn btn-secondary" }, "Remove");
+    removeBtn.addEventListener("click", () => {
+      if (linesBody.children.length === 1) {
+        setStatus("An order needs at least one line.", true);
+        return;
+      }
+      row.remove();
+    });
+    removeCell.appendChild(removeBtn);
+    row.appendChild(removeCell);
+
+    itemSel.addEventListener("change", () => {
+      const item = ITEMS.find((it) => String(it.id) === itemSel.value);
+      if (!item) return;
+      priceInput.value = item.price;
+      unitSel.value = String(item.unit_id);
+    });
+
+    linesBody.appendChild(row);
+    return row;
+  }
+
+  function newIdempotencyKey() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID();
+    }
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (ch) => {
+      const rand = (Math.random() * 16) | 0;
+      const val = ch === "x" ? rand : (rand & 0x3) | 0x8;
+      return val.toString(16);
+    });
+  }
+
+  function collectOrder() {
+    if (!customerSel.value) throw new Error("Choose a customer first.");
+    const lines = [];
+    Array.from(linesBody.querySelectorAll("tr")).forEach((row) => {
+      const selects = row.querySelectorAll("select");
+      const inputs = row.querySelectorAll("input");
+      const itemId = selects[0].value;
+      const unitId = selects[1].value;
+      const qty = inputs[0].value.trim();
+      const price = inputs[1].value.trim();
+      if (!itemId) return;
+      if (!qty || !price) throw new Error("Every line needs a quantity and a price.");
+      lines.push({
+        item_id: Number(itemId),
+        unit_id: Number(unitId),
+        qty: qty,
+        unit_price: price
+      });
+    });
+    if (!lines.length) throw new Error("Add at least one line.");
+    return {
+      customer_id: Number(customerSel.value),
+      notes: notesInput.value.trim(),
+      idempotency_key: newIdempotencyKey(),
+      lines: lines
+    };
+  }
+
+  function loadQueue() {
+    try {
+      return JSON.parse(localStorage.getItem(OUTBOX_KEY)) || [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  function saveQueue(queue) {
+    localStorage.setItem(OUTBOX_KEY, JSON.stringify(queue));
+  }
+
+  function renderQueue() {
+    const queue = loadQueue();
+    queueCount.textContent = String(queue.length);
+    queueEl.textContent = "";
+    queue.forEach((order, index) => {
+      const customer = CUSTOMERS.find((c) => String(c.id) === String(order.customer_id));
+      const label = (customer ? customer.name : "Customer #" + order.customer_id) +
+        " — " + order.lines.length + " line(s)";
+      queueEl.appendChild(make("li", {}, label));
+      void index;
+    });
+  }
+
+  function enqueue(order) {
+    const queue = loadQueue();
+    queue.push(order);
+    saveQueue(queue);
+    renderQueue();
+  }
+
+  async function sendOrder(order) {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(order)
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error("Server rejected order: " + detail);
+    }
+    return response.json();
+  }
+
+  let syncing = false;
+
+  async function flushQueue() {
+    if (syncing || !navigator.onLine) return;
+    const queue = loadQueue();
+    if (!queue.length) return;
+    syncing = true;
+    const remaining = [];
+    let synced = 0;
+    for (const order of queue) {
+      try {
+        const data = await sendOrder(order);
+        synced += 1;
+        void data;
+      } catch (err) {
+        remaining.push(order);
+      }
+    }
+    saveQueue(remaining);
+    renderQueue();
+    syncing = false;
+    if (synced) {
+      setStatus(synced + " queued order(s) synced.", false);
+    } else if (remaining.length) {
+      setStatus("Still offline — " + remaining.length + " order(s) remain queued.", true);
+    }
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    let order;
+    try {
+      order = collectOrder();
+    } catch (err) {
+      setStatus(err.message, true);
+      return;
+    }
+
+    if (!navigator.onLine) {
+      enqueue(order);
+      setStatus("Offline — order saved on this device and will sync automatically.", false);
+      form.reset();
+      linesBody.textContent = "";
+      addLine();
+      return;
+    }
+
+    try {
+      const data = await sendOrder(order);
+      setStatus(
+        (data.created ? "Order ORD-" + data.id + " submitted." : "Order ORD-" + data.id + " already recorded.") +
+          " Status: " + data.status,
+        false
+      );
+      form.reset();
+      linesBody.textContent = "";
+      addLine();
+    } catch (err) {
+      enqueue(order);
+      setStatus("Network failed — order queued on this device. " + err.message, true);
+    }
+  });
+
+  document.getElementById("add-line").addEventListener("click", () => addLine());
+  document.getElementById("sync").addEventListener("click", flushQueue);
+  window.addEventListener("online", flushQueue);
+
+  CUSTOMERS.forEach((c) => {
+    customerSel.appendChild(option(c.id, c.name + " (" + c.state + ")", false));
+  });
+
+  if (!CUSTOMERS.length) {
+    setStatus("No customers are assigned to you. Contact an administrator.", true);
+  }
+  if (!ITEMS.length) {
+    setStatus("No finished goods are available for ordering.", true);
+  }
+
+  addLine();
+  renderQueue();
+  flushQueue();
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sales/sw.js", { scope: "/sales/" }).catch(() => {});
+  }
+})();
+</script>
+{% endblock %}

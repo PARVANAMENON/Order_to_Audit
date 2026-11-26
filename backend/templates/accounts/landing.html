@@ -1,18 +1,22 @@
 {% extends "base.html" %}
 {% block title %}Home | Order-to-Audit{% endblock %}
 {% block content %}
-<div class="card">
-  <h1>Welcome, {{ user.get_full_name|default:user.username }}</h1>
-  <p class="muted">Signed in as <strong>{{ role_display }}</strong>. Available workspaces for your role:</p>
+<div class="hero">
+  <span class="hero-eyebrow">Workspace</span>
+  <h1>Welcome back, {{ user.get_full_name|default:user.username }}</h1>
+  <p>Signed in as <strong>{{ role_display }}</strong>. Here are the workspaces available to your role.</p>
 </div>
 
 <div class="grid">
   {% for card in cards %}
-    <div class="card">
+    <a href="{{ card.url }}" class="workspace-card">
+      <span class="tile">{{ card.title|first }}</span>
       <h3>{{ card.title }}</h3>
       <p class="muted">{{ card.desc }}</p>
-      <a href="{{ card.url }}" class="btn">Open</a>
-    </div>
+      <span class="arrow">Open workspace →</span>
+    </a>
+  {% empty %}
+    <div class="card"><p class="empty">No workspaces are assigned to this role yet.</p></div>
   {% endfor %}
 </div>
 {% endblock %}

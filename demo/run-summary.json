@@ -1,0 +1,58 @@
+{
+  "target": "http://127.0.0.1:8000",
+  "results": [
+    {
+      "scene": "01-title",
+      "ok": true,
+      "start": 0.43,
+      "seconds": 40.2
+    },
+    {
+      "scene": "02-salesman",
+      "ok": true,
+      "start": 40.58,
+      "seconds": 80.1
+    },
+    {
+      "scene": "03-masters",
+      "ok": true,
+      "start": 120.68,
+      "seconds": 60.1
+    },
+    {
+      "scene": "04-admin",
+      "ok": true,
+      "start": 180.78,
+      "seconds": 75.1
+    },
+    {
+      "scene": "05-production",
+      "ok": true,
+      "start": 255.87,
+      "seconds": 75.1
+    },
+    {
+      "scene": "06-accountant",
+      "ok": true,
+      "start": 330.99,
+      "seconds": 60.2
+    },
+    {
+      "scene": "07-owner",
+      "ok": true,
+      "start": 391.18,
+      "seconds": 60.2
+    },
+    {
+      "scene": "08-closing",
+      "ok": true,
+      "start": 451.36,
+      "seconds": 30.3
+    }
+  ],
+  "facts": {
+    "orderQty": 5000,
+    "availablePackets": 206,
+    "shortagePackets": 4794
+  }
+}

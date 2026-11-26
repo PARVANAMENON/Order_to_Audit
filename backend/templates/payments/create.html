@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Record Payment | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px;"><h2>Record Customer Payment</h2>
+<form method="post">{% csrf_token %}
+  <div class="form-row"><label>Customer</label>
+    <select name="customer_id" required>{% for c in customers %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select></div>
+  <div class="form-row"><label>Amount (Rs)</label><input type="text" name="amount" required placeholder="4000.00"></div>
+  <div class="form-row"><label>Payment Date</label><input type="date" name="payment_date" value="{{ today }}"></div>
+  <div class="form-row"><label>Reference (cheque/UPI/NEFT)</label><input type="text" name="reference" placeholder="UPI-REF-001"></div>
+  <div class="form-row"><label>Notes</label><textarea name="notes" rows="2"></textarea></div>
+  <button type="submit" class="btn">Post Payment</button>
+  <a href="/payments/" class="btn btn-secondary">Cancel</a>
+</form></div>
+{% endblock %}

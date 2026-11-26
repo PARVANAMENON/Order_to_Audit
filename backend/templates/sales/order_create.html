@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}New Order | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card" style="max-width:720px;">
+  <h2>Place New Sales Order</h2>
+  <form method="post">{% csrf_token %}
+    <div class="grid">
+      <div class="form-row"><label>Customer</label>
+        <select name="customer_id" required>
+          {% for c in customers %}<option value="{{ c.id }}">{{ c.name }} ({{ c.state }})</option>{% endfor %}
+        </select></div>
+      <div class="form-row"><label>Notes</label><input type="text" name="notes" placeholder="Optional"></div>
+    </div>
+    <h3>Items</h3>
+    <table><thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Price / Unit (Rs)</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><select name="item_id" id="item_sel" required>
+          <option value="">-- Select --</option>
+          {% for it in items %}<option value="{{ it.id }}">{{ it.sku }} - {{ it.name }}</option>{% endfor %}
+        </select></td>
+        <td><input type="text" name="qty" placeholder="150" required></td>
+        <td><select name="unit_id" required>{% for u in units %}<option value="{{ u.id }}">{{ u.code }}</option>{% endfor %}</select></td>
+        <td><input type="text" name="unit_price" placeholder="50.00" required></td>
+      </tr>
+    </tbody></table>
+    <div style="margin-top:1rem;display:flex;gap:.6rem;">
+      <button type="submit" class="btn">Submit Order</button>
+      <a href="/sales/orders/" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

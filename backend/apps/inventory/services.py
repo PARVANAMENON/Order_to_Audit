@@ -12,6 +12,7 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from apps.accounts.models import User
+from apps.audit.services import log_action
 from apps.inventory.models import SourceType, StockAdjustment, StockLedger
 from apps.masters.models import Item, Unit
 from apps.masters.services import (
@@ -133,6 +134,19 @@ def post_adjustment(
         source_ref=f"ADJ-{adj.id}",
         user=user,
         notes=clean_reason,
+    )
+    log_action(
+        user=user,
+        model_name="StockAdjustment",
+        object_id=adj.id,
+        action="post_adjustment",
+        after={
+            "item": locked_item.sku,
+            "qty": str(base_qty),
+            "unit_rate": str(base_rate),
+            "reason": clean_reason,
+        },
+        notes=f"ADJ-{adj.id} {locked_item.sku}",
     )
     return adj
 

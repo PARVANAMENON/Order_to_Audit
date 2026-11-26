@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Sales Register | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Sales Register</h2>
+  <form method="get" style="display:flex;gap:1rem;align-items:center;margin-bottom:1rem;">
+    <label>From <input type="date" name="date_from" value="{{ date_from }}"></label>
+    <label>To <input type="date" name="date_to" value="{{ date_to }}"></label>
+    <button type="submit" class="btn">Filter</button>
+    <a href="?date_from={{ date_from }}&date_to={{ date_to }}&export=csv" class="btn btn-secondary">Export CSV</a>
+  </form>
+  <table>
+    <thead><tr><th>Invoice No</th><th>Date</th><th>Customer</th><th class="num">Taxable</th><th class="num">CGST</th><th class="num">SGST</th><th class="num">IGST</th><th class="num">Total</th><th>Status</th></tr></thead>
+    <tbody>{% for inv in invoices %}
+      <tr>
+        <td><a href="/sales/invoices/{{ inv.id }}/">{{ inv.fy_number }}</a></td>
+        <td>{{ inv.invoice_date }}</td>
+        <td>{{ inv.customer.name }}</td>
+        <td class="num">{{ inv.taxable_value }}</td>
+        <td class="num">{{ inv.cgst }}</td>
+        <td class="num">{{ inv.sgst }}</td>
+        <td class="num">{{ inv.igst }}</td>
+        <td class="num">{{ inv.total_amount }}</td>
+        <td>{{ inv.status }}</td>
+      </tr>
+    {% empty %}<tr><td colspan="9" class="muted">No invoices found.</td></tr>{% endfor %}
+    <tr style="font-weight:bold;">
+      <td colspan="3">Totals</td>
+      <td class="num">{{ total_taxable }}</td>
+      <td class="num">{{ total_cgst }}</td>
+      <td class="num">{{ total_sgst }}</td>
+      <td class="num">{{ total_igst }}</td>
+      <td class="num">{{ total_amount }}</td>
+      <td></td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

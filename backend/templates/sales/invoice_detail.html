@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ invoice.fy_number }} | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h2 style="margin-bottom:.25rem;">{{ invoice.fy_number }}</h2>
+    <p class="muted" style="margin:0;">Customer: <strong>{{ invoice.customer.name }}</strong> |
+    Place of Supply: {{ invoice.place_of_supply }} | Date: {{ invoice.invoice_date }} |
+    Status: <span class="badge {% if invoice.status == 'active' %}badge-ok{% else %}badge-flag{% endif %}">{{ invoice.get_status_display }}</span></p>
+  </div>
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+    <a href="/sales/invoices/{{ invoice.id }}/pdf/" target="_blank" class="btn">Download PDF</a>
+    {% if user.role == "admin" or user.is_superuser %}
+      {% if invoice.status == "active" %}
+      <form method="post" action="/sales/invoices/{{ invoice.id }}/dispatch/">{% csrf_token %}<button class="btn btn-secondary">Post Dispatch</button></form>
+      <form method="post" action="/sales/invoices/{{ invoice.id }}/credit-note/" style="display:flex;gap:.4rem;">{% csrf_token %}
+        <input type="text" name="reason" placeholder="Credit note reason" style="width:200px;" required>
+        <label style="display:flex;align-items:center;gap:.3rem;font-weight:normal;font-size:.9rem;">
+          <input type="checkbox" name="reverses_stock" value="1"> Reverse Stock</label>
+        <button class="btn btn-secondary">Create Credit Note</button></form>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+
+<div class="card"><h3>Invoice Lines</h3>
+<table><thead><tr>
+  <th>Item</th><th>HSN</th><th class="num">Qty</th><th class="num">Rate</th>
+  <th class="num">Taxable</th><th class="num">CGST</th><th class="num">SGST</th>
+  <th class="num">IGST</th><th class="num">Total</th>
+</tr></thead>
+<tbody>{% for line in lines %}
+  <tr>
+    <td>{{ line.item.name }}</td><td>{{ line.hsn }}</td>
+    <td class="num">{{ line.qty }} {{ line.unit.code }}</td>
+    <td class="num">{{ line.unit_price }}</td>
+    <td class="num">{{ line.taxable_value }}</td>
+    <td class="num">{{ line.cgst }}</td><td class="num">{{ line.sgst }}</td>
+    <td class="num">{{ line.igst }}</td>
+    <td class="num"><strong>{{ line.line_total }}</strong></td>
+  </tr>
+{% endfor %}
+<tr style="background:#f8fafc;font-weight:bold;">
+  <td colspan="4">TOTALS</td>
+  <td class="num">{{ invoice.taxable_value }}</td>
+  <td class="num">{{ invoice.cgst }}</td><td class="num">{{ invoice.sgst }}</td>
+  <td class="num">{{ invoice.igst }}</td>
+  <td class="num">Rs {{ invoice.total_amount }}</td>
+</tr>
+</tbody></table></div>
+
+{% if dispatches %}
+<div class="card"><h3>Dispatches</h3>
+<table><thead><tr><th>DISP #</th><th>Date</th><th>Status</th><th>By</th><th>Notes</th></tr></thead>
+<tbody>{% for d in dispatches %}
+  <tr><td>DISP-{{ d.id }}</td><td>{{ d.dispatch_date }}</td>
+  <td><span class="badge {% if d.status == 'dispatched' %}badge-ok{% else %}badge-warn{% endif %}">{{ d.get_status_display }}</span></td>
+  <td>{{ d.dispatched_by.username }}</td><td class="muted">{{ d.notes }}</td></tr>
+{% endfor %}</tbody></table></div>{% endif %}
+
+{% if credit_notes %}
+<div class="card"><h3>Credit Notes</h3>
+<table><thead><tr><th>CN #</th><th>Date</th><th class="num">Amount (Rs)</th><th>Reason</th><th>Stock Reversed</th></tr></thead>
+<tbody>{% for cn in credit_notes %}
+  <tr><td>{{ cn.cn_number }}</td><td>{{ cn.cn_date }}</td>
+  <td class="num">{{ cn.total_amount }}</td><td>{{ cn.reason }}</td>
+  <td>{% if cn.reverses_stock %}<span class="badge badge-ok">Yes</span>{% else %}-{% endif %}</td></tr>
+{% endfor %}</tbody></table></div>{% endif %}
+{% endblock %}

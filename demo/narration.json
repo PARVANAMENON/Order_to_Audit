@@ -1,0 +1,223 @@
+{
+  "voice": "en-IN-PrabhatNeural",
+  "rate": "+8%",
+  "segments": [
+    {
+      "scene": "01-title",
+      "at": 2,
+      "text": "Order to Audit: a GST-ready ERP for a snack factory, from the first field order to the final audit."
+    },
+    {
+      "scene": "01-title",
+      "caption": "A snack factory",
+      "text": "Five roles share one Django application: salesman, admin, production, auditor and owner."
+    },
+    {
+      "scene": "01-title",
+      "caption": "Everyone signs in",
+      "text": "One ledger, no spreadsheets in between, and nothing gets retyped."
+    },
+    {
+      "scene": "02-salesman",
+      "caption": "Salesman A signs in",
+      "text": "Salesman A signs in. Every field order starts here."
+    },
+    {
+      "scene": "02-salesman",
+      "caption": "Placing a",
+      "text": "Five thousand packets of Murukku for Retailer A in Tamil Nadu."
+    },
+    {
+      "scene": "02-salesman",
+      "caption": "Instant stock check",
+      "text": "Stock is checked on submit: {{availablePackets}} on hand, {{shortagePackets}} short."
+    },
+    {
+      "scene": "02-salesman",
+      "caption": "The field-capture PWA",
+      "text": "In the field there may be no signal; the PWA works offline."
+    },
+    {
+      "scene": "02-salesman",
+      "caption": "Network dropped",
+      "text": "The network is gone; the app carries on."
+    },
+    {
+      "scene": "02-salesman",
+      "caption": "Saved locally",
+      "text": "The order queues with an idempotency key, so a retry cannot duplicate it."
+    },
+    {
+      "scene": "02-salesman",
+      "caption": "Back online",
+      "text": "Back online, the queue replays through the same API."
+    },
+    {
+      "scene": "03-masters",
+      "caption": "Masters: items",
+      "text": "Masters hold items, HSN codes, GST rates and variance tolerances."
+    },
+    {
+      "scene": "03-masters",
+      "caption": "Table-driven conversions",
+      "text": "Unit conversions are table-driven: kilograms to grams, litres to millilitres, cartons to packets."
+    },
+    {
+      "scene": "03-masters",
+      "caption": "Customer state",
+      "text": "The customer's state decides the tax: Tamil Nadu splits CGST and SGST; Karnataka uses IGST."
+    },
+    {
+      "scene": "03-masters",
+      "caption": "The Murukku 200 g BOM",
+      "text": "The Murukku bill of materials plans two hundred packets per batch, consumed line by line."
+    },
+    {
+      "scene": "04-admin",
+      "caption": "Admin reviews",
+      "text": "Admin reviews the field order against live stock."
+    },
+    {
+      "scene": "04-admin",
+      "caption": "Admin trims the approved",
+      "text": "Five thousand requested, but only a few hundred available. He approves two hundred packets."
+    },
+    {
+      "scene": "04-admin",
+      "caption": "Approval checks",
+      "text": "Approval checks stock coverage before it commits."
+    },
+    {
+      "scene": "04-admin",
+      "caption": "Gapless financial-year",
+      "text": "Gapless financial-year number; intra-state supply splits CGST and SGST."
+    },
+    {
+      "scene": "04-admin",
+      "caption": "The GST tax invoice",
+      "text": "The same document is a print-ready GST invoice."
+    },
+    {
+      "scene": "04-admin",
+      "caption": "Zoomed in",
+      "lead": 1.0,
+      "text": "At full size: HSN, quantity, rate, taxable value, and the two tax halves."
+    },
+    {
+      "scene": "04-admin",
+      "caption": "Dispatch posts",
+      "text": "Dispatch posts finished goods out of stock. Posted documents are never edited."
+    },
+    {
+      "scene": "04-admin",
+      "caption": "A Rs 5,000 receipt",
+      "text": "A five thousand rupee receipt auto-allocates FIFO to the oldest open invoice, and ageing updates at once."
+    },
+    {
+      "scene": "04-admin",
+      "caption": "Credit notes live here",
+      "text": "Credit notes reverse revenue and tax without touching the original invoice."
+    },
+    {
+      "scene": "05-production",
+      "caption": "The production supervisor",
+      "text": "The production supervisor starts a run from the Murukku BOM."
+    },
+    {
+      "scene": "05-production",
+      "caption": "One batch",
+      "text": "One batch plans two hundred packets."
+    },
+    {
+      "scene": "05-production",
+      "caption": "Actuals entered",
+      "text": "He enters actual output, wastage and damaged packaging."
+    },
+    {
+      "scene": "05-production",
+      "caption": "Raw material and packaging actuals",
+      "text": "Then actual material and packaging consumed, line by line."
+    },
+    {
+      "scene": "05-production",
+      "caption": "Posted: raw stock out",
+      "text": "Raw stock out, finished goods in, as append-only ledger rows."
+    },
+    {
+      "scene": "05-production",
+      "caption": "Cartons used",
+      "text": "Nine cartons against ten planned is a ten percent variance, outside tolerance, so the run is flagged."
+    },
+    {
+      "scene": "05-production",
+      "caption": "Every line shows planned",
+      "text": "Every line shows planned versus actual, variance, tolerance and line cost."
+    },
+    {
+      "scene": "06-accountant",
+      "caption": "The auditor works read-only",
+      "text": "The auditor works read-only, on the same data."
+    },
+    {
+      "scene": "06-accountant",
+      "caption": "Run costing",
+      "text": "Run costing gives weighted-average cost, overhead, cost per packet and margin."
+    },
+    {
+      "scene": "06-accountant",
+      "caption": "Sales register",
+      "text": "The sales register shows invoice-level taxable value and the GST split."
+    },
+    {
+      "scene": "06-accountant",
+      "caption": "CSV export",
+      "text": "The CSV export is for the accountant; the app stays read-only."
+    },
+    {
+      "scene": "06-accountant",
+      "caption": "GST summary",
+      "text": "The GST summary totals CGST, SGST and IGST for the period."
+    },
+    {
+      "scene": "06-accountant",
+      "caption": "Stock ledger: every movement",
+      "text": "The stock ledger traces every movement to its source document and the user who posted it."
+    },
+    {
+      "scene": "06-accountant",
+      "caption": "Outstanding and ageing",
+      "text": "Outstanding and ageing run from zero to thirty days through ninety plus."
+    },
+    {
+      "scene": "07-owner",
+      "caption": "Owner dashboard",
+      "text": "The owner sees today's orders, approvals, flagged runs and receivables."
+    },
+    {
+      "scene": "07-owner",
+      "caption": "Stock is never stored",
+      "lead": 0.8,
+      "text": "Stock is never stored: every balance is the ledger sum at weighted-average cost."
+    },
+    {
+      "scene": "07-owner",
+      "caption": "Low-stock alerts",
+      "text": "Low-stock alerts and flagged runs surface where the owner looks first."
+    },
+    {
+      "scene": "07-owner",
+      "caption": "The audit trail is append-only",
+      "text": "The audit trail is append-only: actor, action, before and after, timestamp."
+    },
+    {
+      "scene": "07-owner",
+      "caption": "Posted invoices are immutable",
+      "text": "Posted invoices are immutable. Corrections are credit notes, never silent edits."
+    },
+    {
+      "scene": "08-closing",
+      "at": 2,
+      "text": "One ledger. One trail. Zero gaps. Order to Audit is built with Django, Django REST Framework and ReportLab, and shipped in Docker."
+    }
+  ]
+}

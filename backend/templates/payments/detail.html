@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}PAY-{{ payment.id }} | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Payment PAY-{{ payment.id }}</h2>
+  <p><strong>Customer:</strong> {{ payment.customer.name }} | <strong>Amount:</strong> Rs {{ payment.amount }} | <strong>Date:</strong> {{ payment.payment_date }}</p>
+  <p><strong>Reference:</strong> {{ payment.reference|default:"-" }} | <strong>Received by:</strong> {{ payment.received_by.username }}</p>
+</div>
+<div class="card"><h3>Allocated to Invoices</h3>
+<table><thead><tr><th>Invoice</th><th class="num">Amount Allocated</th></tr></thead>
+<tbody>{% for a in allocations %}
+  <tr><td><a href="/sales/invoices/{{ a.invoice_id }}/">{{ a.invoice.fy_number }}</a></td><td class="num">Rs {{ a.amount }}</td></tr>
+{% empty %}<tr><td colspan="2" class="muted">Not allocated.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

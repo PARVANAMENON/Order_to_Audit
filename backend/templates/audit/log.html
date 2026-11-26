@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Audit Log | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Audit Log</h2>
+  <p class="muted">Immutable trail of significant write actions. Newest first, capped at 200 rows.</p>
+  <form method="get" style="display:flex;gap:1rem;align-items:end;margin-bottom:1rem;flex-wrap:wrap;">
+    <label>Model <input type="text" name="model" value="{{ request.GET.model }}" placeholder="Order, Invoice, Payment..."></label>
+    <label>Action <input type="text" name="action" value="{{ request.GET.action }}" placeholder="approve_order"></label>
+    <button type="submit" class="btn">Filter</button>
+    <a href="/audit/" class="btn btn-secondary">Reset</a>
+  </form>
+  <table>
+    <thead><tr>
+      <th>Timestamp</th><th>User</th><th>Model</th><th>Object</th>
+      <th>Action</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+    {% for log in logs %}
+      <tr>
+        <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+        <td>{% if log.user %}{{ log.user.username }}{% else %}<span class="muted">system</span>{% endif %}</td>
+        <td>{{ log.model_name }}</td>
+        <td>#{{ log.object_id }}</td>
+        <td><span class="badge badge-warn">{{ log.action }}</span></td>
+        <td class="muted">{{ log.notes|default:"-" }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="muted">No audit entries found.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

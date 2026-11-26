@@ -8,3 +8,14 @@ venv/
 .ruff_cache/
 staticfiles/
 media/
+backups/
+
+# Demo recording artifacts (keep the deliverables, not the working files)
+demo/node_modules/
+demo/videos/
+demo/audio/segments/
+demo/downloads/
+demo/screens/
+demo/*.log
+
+*.log

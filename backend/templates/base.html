@@ -3,155 +3,736 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Ctext x='16' y='21' font-family='Segoe UI,Arial' font-size='13' font-weight='700' fill='white' text-anchor='middle'%3EOA%3C/text%3E%3C/svg%3E">
   <title>{% block title %}Order-to-Audit{% endblock %}</title>
+  {% block extra_head %}{% endblock %}
   <style>
     :root {
-      --bg: #f6f7fb;
+      --bg: #f3f5fb;
       --surface: #ffffff;
-      --border: #dfe3eb;
-      --text: #1c2434;
+      --surface-2: #f8fafc;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
       --muted: #64748b;
-      --primary: #1d4ed8;
-      --primary-dark: #1e40af;
+      --primary: #4f46e5;
+      --primary-2: #7c3aed;
+      --primary-dark: #4338ca;
+      --accent: #0d9488;
       --danger-bg: #fee2e2;
       --danger-fg: #991b1b;
       --ok-bg: #dcfce7;
       --ok-fg: #166534;
       --warn-bg: #fef3c7;
       --warn-fg: #92400e;
+      --radius: 14px;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 18px 40px -24px rgba(15, 23, 42, 0.35);
+      --ring: 0 0 0 3px rgba(79, 70, 229, 0.18);
     }
     * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: var(--bg);
+      font-family: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+      background:
+        radial-gradient(1100px 520px at 6% -12%, rgba(79, 70, 229, 0.10), transparent 60%),
+        radial-gradient(900px 460px at 100% -6%, rgba(13, 148, 136, 0.09), transparent 58%),
+        var(--bg);
+      background-attachment: fixed;
       color: var(--text);
-      line-height: 1.45;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
-    header {
-      background: #0f172a;
-      color: #fff;
-      padding: 0.85rem 1.5rem;
+    a { color: var(--primary-dark); }
+    a:hover { color: var(--primary); }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.85em;
+      background: #eef2ff;
+      color: #3730a3;
+      padding: 0.1rem 0.35rem;
+      border-radius: 5px;
+    }
+
+    /* ---------- Shell ---------- */
+    .app-shell { display: grid; grid-template-columns: 264px minmax(0, 1fr); min-height: 100vh; }
+    .app-shell--plain { grid-template-columns: minmax(0, 1fr); }
+    .app-body { display: flex; flex-direction: column; min-width: 0; }
+
+    /* ---------- Sidebar ---------- */
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 1.15rem 0.9rem 1.5rem;
+      background:
+        radial-gradient(420px 220px at 10% 0%, rgba(99, 102, 241, 0.28), transparent 70%),
+        linear-gradient(180deg, #0b1220 0%, #101a30 55%, #0b1220 100%);
+      color: #c7d2e4;
+      border-right: 1px solid rgba(148, 163, 184, 0.14);
+      scrollbar-width: thin;
+      scrollbar-color: #334155 transparent;
+    }
+    .brand {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 0.75rem;
+      gap: 0.7rem;
+      padding: 0.25rem 0.45rem 1rem;
+      text-decoration: none;
+      color: #fff;
     }
-    header a { color: #e2e8f0; text-decoration: none; font-weight: 500; margin-right: 1rem; }
-    header a:hover { color: #fff; text-decoration: underline; }
-    .brand { font-weight: 700; font-size: 1.05rem; color: #fff; margin-right: 1.5rem; }
-    .user-meta { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; }
-    .badge {
-      display: inline-block;
-      padding: 0.15rem 0.55rem;
-      border-radius: 999px;
+    .brand:hover { color: #fff; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      border-radius: 11px;
       font-size: 0.78rem;
-      font-weight: 600;
-      background: #334155;
-      color: #f8fafc;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: #fff;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6 55%, #0d9488);
+      box-shadow: 0 10px 22px -10px rgba(99, 102, 241, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.28);
     }
-    .badge-flag { background: var(--danger-bg); color: var(--danger-fg); }
-    .badge-ok { background: var(--ok-bg); color: var(--ok-fg); }
-    .badge-warn { background: var(--warn-bg); color: var(--warn-fg); }
-    main { max-width: 1120px; margin: 1.5rem auto; padding: 0 1rem 3rem; }
+    .brand-mark--sm { width: 30px; height: 30px; flex-basis: 30px; border-radius: 9px; font-size: 0.68rem; }
+    .brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+    .brand-text strong { font-size: 0.98rem; letter-spacing: -0.01em; }
+    .brand-text small { font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: #7c8aa5; margin-top: 0.2rem; }
+    .side-nav { display: flex; flex-direction: column; gap: 0.12rem; }
+    .nav-label {
+      margin: 1.05rem 0.65rem 0.35rem;
+      font-size: 0.64rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+    .nav-label:first-child { margin-top: 0.15rem; }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.5rem 0.65rem;
+      border-radius: 10px;
+      color: #b9c5d8;
+      font-size: 0.885rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    }
+    .nav-link .ico { width: 17px; height: 17px; flex: 0 0 17px; opacity: 0.75; }
+    .nav-link:hover { background: rgba(148, 163, 184, 0.13); color: #fff; }
+    .nav-link:hover .ico { opacity: 1; }
+    .nav-link.active {
+      color: #fff;
+      background: linear-gradient(90deg, rgba(99, 102, 241, 0.32), rgba(99, 102, 241, 0.05));
+      box-shadow: inset 2px 0 0 #a5b4fc;
+    }
+    .nav-link.active .ico { opacity: 1; color: #c7d2fe; }
+    .sidebar-foot {
+      margin-top: 1.4rem;
+      padding: 0.8rem 0.85rem;
+      border-radius: 12px;
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.13);
+      font-size: 0.74rem;
+      line-height: 1.5;
+      color: #8fa0bb;
+    }
+    .sidebar-foot .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.62rem;
+      color: #5eead4;
+      margin-bottom: 0.4rem;
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #2dd4bf;
+      box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.6);
+      animation: pulse 2.2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.5); }
+      70% { box-shadow: 0 0 0 7px rgba(45, 212, 191, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0); }
+    }
+
+    /* ---------- Top bar ---------- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.8rem 1.6rem;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-left, .topbar-right { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
+    .crumb { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.02em; color: #334155; }
+    .topbar .muted { font-size: 0.8rem; }
+    .brand-inline { display: inline-flex; align-items: center; gap: 0.55rem; text-decoration: none; color: var(--text); font-weight: 700; letter-spacing: -0.01em; }
+    .user-meta { display: flex; align-items: center; gap: 0.65rem; font-size: 0.85rem; }
+    .avatar {
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #6366f1, #0d9488);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+    .user-name { font-weight: 650; color: #1e293b; }
+    .topbar form { margin: 0; }
+
+    /* ---------- Content ---------- */
+    main { width: 100%; max-width: 1180px; margin: 0 auto; padding: 1.6rem 1.6rem 3.5rem; }
+    h1, h2, h3 { margin-top: 0; letter-spacing: -0.022em; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.28rem; }
+    h3 { font-size: 1.02rem; }
+    p { margin-top: 0; }
+
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.25rem;
+      border-radius: var(--radius);
+      padding: 1.3rem 1.4rem;
       margin-bottom: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.18s ease, border-color 0.18s ease;
+      overflow-x: auto;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 1rem;
-    }
-    h1, h2, h3 { margin-top: 0; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    .card:hover { box-shadow: var(--shadow-md); border-color: #d8dfeb; }
+    .card > :last-child { margin-bottom: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
+    .stack { display: flex; flex-direction: column; gap: 1rem; }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; }
+    .toolbar h2, .toolbar h1 { margin-bottom: 0.2rem; }
+    .toolbar-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+    /* ---------- Tables ---------- */
+    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.9rem; }
     th, td {
-      padding: 0.6rem 0.7rem;
-      border-bottom: 1px solid var(--border);
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid #edf1f7;
       text-align: left;
       vertical-align: top;
     }
-    th { background: #f8fafc; font-weight: 600; color: #334155; }
-    tr.flagged-row { background: #fff1f2; }
+    thead th {
+      background: var(--surface-2);
+      color: #475569;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    thead th:first-child { border-top-left-radius: 9px; }
+    thead th:last-child { border-top-right-radius: 9px; }
+    tbody tr { transition: background 0.12s ease; }
+    tbody tr:hover { background: #f8faff; }
+    tbody tr:last-child td { border-bottom: none; }
+    tr.flagged-row { background: #fff5f6; }
+    tr.flagged-row:hover { background: #ffeef1; }
+    td a { font-weight: 600; text-decoration: none; }
+    td a:hover { text-decoration: underline; }
+
+    /* ---------- Buttons ---------- */
     .btn {
-      display: inline-block;
-      background: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
       color: #fff;
-      border: none;
-      border-radius: 6px;
+      border: 1px solid transparent;
+      border-radius: 9px;
       padding: 0.55rem 1rem;
-      font-size: 0.92rem;
-      font-weight: 600;
+      font-size: 0.88rem;
+      font-weight: 650;
+      font-family: inherit;
       cursor: pointer;
       text-decoration: none;
+      box-shadow: 0 10px 20px -12px rgba(79, 70, 229, 0.85);
+      transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease, background 0.14s ease;
+      white-space: nowrap;
     }
-    .btn:hover { background: var(--primary-dark); }
-    .btn-secondary { background: #475569; }
-    .btn-secondary:hover { background: #334155; }
+    .btn:hover { color: #fff; filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 14px 24px -12px rgba(79, 70, 229, 0.85); }
+    .btn:active { transform: translateY(0); filter: brightness(0.98); }
+    .btn:focus-visible { outline: none; box-shadow: var(--ring); }
+    .btn-secondary {
+      background: #fff;
+      color: #334155;
+      border: 1px solid var(--border-strong);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-secondary:hover { background: #f1f5f9; color: #0f172a; filter: none; }
+    .btn-ghost { background: transparent; color: #475569; border: 1px solid transparent; box-shadow: none; }
+    .btn-ghost:hover { background: #eef2f7; color: #0f172a; filter: none; transform: none; }
+    .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.78rem; border-radius: 7px; }
+
+    /* ---------- Badges & chips ---------- */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.16rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      background: #eef2ff;
+      color: #4338ca;
+      border: 1px solid #e0e7ff;
+      white-space: nowrap;
+    }
+    .badge-flag { background: var(--danger-bg); color: var(--danger-fg); border-color: #fecaca; }
+    .badge-ok { background: var(--ok-bg); color: var(--ok-fg); border-color: #bbf7d0; }
+    .badge-warn { background: var(--warn-bg); color: var(--warn-fg); border-color: #fde68a; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #e2e8f0;
+      font-size: 0.76rem;
+      font-weight: 600;
+    }
+
+    /* ---------- Forms ---------- */
     input, select, textarea {
       width: 100%;
-      padding: 0.5rem 0.65rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      padding: 0.55rem 0.7rem;
+      border: 1px solid var(--border-strong);
+      border-radius: 9px;
       font: inherit;
+      font-size: 0.9rem;
+      color: var(--text);
+      background: #fff;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
-    label { display: block; font-weight: 600; margin-bottom: 0.3rem; font-size: 0.88rem; }
+    input:hover, select:hover, textarea:hover { border-color: #94a3b8; }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: var(--ring);
+    }
+    input[readonly] { background: var(--surface-2); color: #475569; }
+    label { display: block; font-weight: 650; margin-bottom: 0.32rem; font-size: 0.82rem; color: #334155; }
     .form-row { margin-bottom: 0.9rem; }
-    .messages { list-style: none; padding: 0; margin: 0 0 1rem; }
+    .form-help { font-size: 0.76rem; color: var(--muted); margin-top: 0.25rem; }
+
+    /* ---------- Messages ---------- */
+    .messages { list-style: none; padding: 0; margin: 0 0 1.1rem; display: flex; flex-direction: column; gap: 0.5rem; }
     .messages li {
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
-      background: #e0f2fe;
-      color: #075985;
+      padding: 0.7rem 0.9rem;
+      border-radius: 10px;
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #dbeafe;
+      border-left: 4px solid #3b82f6;
+      font-size: 0.88rem;
+      font-weight: 500;
     }
-    .messages li.error { background: var(--danger-bg); color: var(--danger-fg); }
-    .messages li.success { background: var(--ok-bg); color: var(--ok-fg); }
-    .muted { color: var(--muted); font-size: 0.88rem; }
+    .messages li.error { background: var(--danger-bg); color: var(--danger-fg); border-color: #fecaca; border-left-color: #ef4444; }
+    .messages li.success { background: var(--ok-bg); color: var(--ok-fg); border-color: #bbf7d0; border-left-color: #22c55e; }
+    .messages li.warning { background: var(--warn-bg); color: var(--warn-fg); border-color: #fde68a; border-left-color: #f59e0b; }
+
+    .muted { color: var(--muted); font-size: 0.86rem; }
     .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .empty { text-align: center; color: var(--muted); padding: 1.6rem 1rem; font-size: 0.9rem; }
+
+    /* ---------- Stat tiles ---------- */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(205px, 1fr)); gap: 1rem; }
+    .stat {
+      position: relative;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.05rem 1.15rem 1.05rem 1.3rem;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .stat::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: var(--tone, var(--primary));
+    }
+    .stat-label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.45rem;
+    }
+    .stat-label .ico { width: 14px; height: 14px; color: var(--tone, var(--primary)); }
+    .stat-value { font-size: 1.75rem; font-weight: 750; letter-spacing: -0.03em; line-height: 1.15; color: #0f172a; }
+    .stat-value small { font-size: 0.95rem; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+    .stat-hint { margin-top: 0.3rem; font-size: 0.76rem; color: var(--muted); }
+    .stat--indigo { --tone: #6366f1; }
+    .stat--teal { --tone: #0d9488; }
+    .stat--amber { --tone: #f59e0b; }
+    .stat--rose { --tone: #e11d48; }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 20px;
+      padding: 1.9rem 2rem;
+      color: #fff;
+      background: linear-gradient(120deg, #1e1b4b 0%, #312e81 45%, #0f766e 100%);
+      box-shadow: 0 26px 50px -30px rgba(30, 27, 75, 0.75);
+      margin-bottom: 1.4rem;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      right: -90px;
+      top: -140px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 65%);
+      pointer-events: none;
+    }
+    .hero h1, .hero h2 { color: #fff; margin-bottom: 0.35rem; }
+    .hero p { color: #cbd5e1; margin-bottom: 0; max-width: 60ch; }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #99f6e4;
+      margin-bottom: 0.6rem;
+    }
+    .hero-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.15rem; }
+    .hero .btn { background: #fff; color: #1e1b4b; box-shadow: 0 10px 22px -14px rgba(0, 0, 0, 0.7); }
+    .hero .btn:hover { color: #1e1b4b; filter: none; }
+    .hero .btn-secondary { background: rgba(255, 255, 255, 0.12); color: #fff; border-color: rgba(255, 255, 255, 0.3); }
+    .hero .btn-secondary:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
+
+    /* ---------- Workspace cards ---------- */
+    .workspace-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      padding: 1.15rem 1.2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+    .workspace-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: #c7d2fe;
+      color: inherit;
+    }
+    .workspace-card h3 { margin-bottom: 0; font-size: 0.98rem; }
+    .workspace-card p { margin-bottom: 0; }
+    .workspace-card .arrow { margin-top: 0.55rem; font-size: 0.8rem; font-weight: 700; color: var(--primary); }
+    .workspace-card:hover .arrow { letter-spacing: 0.01em; }
+    .tile {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+      color: #4338ca;
+      font-size: 0.78rem;
+      font-weight: 800;
+      margin-bottom: 0.15rem;
+    }
+
+    /* ---------- Auth ---------- */
+    .auth-wrap {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      max-width: 940px;
+      margin: 2.4rem auto;
+      border-radius: 22px;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: 0 30px 60px -34px rgba(15, 23, 42, 0.5);
+    }
+    .auth-hero {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 2rem;
+      padding: 2.5rem;
+      color: #fff;
+      background: linear-gradient(155deg, #1e1b4b 0%, #4338ca 55%, #0f766e 100%);
+    }
+    .auth-hero::after {
+      content: "";
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      left: -110px;
+      bottom: -150px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.16), transparent 65%);
+    }
+    .auth-hero h1 { color: #fff; font-size: 1.7rem; margin-bottom: 0.5rem; }
+    .auth-hero p { color: #cbd5e1; font-size: 0.92rem; }
+    .auth-features { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.7rem; position: relative; z-index: 1; }
+    .auth-features li { display: flex; gap: 0.6rem; font-size: 0.86rem; color: #e2e8f0; }
+    .auth-features .tick {
+      display: grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      flex: 0 0 20px;
+      border-radius: 50%;
+      background: rgba(45, 212, 191, 0.18);
+      color: #5eead4;
+      font-size: 0.7rem;
+      font-weight: 800;
+    }
+    .auth-form { padding: 2.5rem; display: flex; flex-direction: column; justify-content: center; }
+    .auth-form h2 { margin-bottom: 0.25rem; }
+    .auth-form .btn { width: 100%; margin-top: 0.4rem; padding: 0.65rem 1rem; }
+    .auth-error {
+      color: var(--danger-fg);
+      background: var(--danger-bg);
+      border: 1px solid #fecaca;
+      padding: 0.6rem 0.75rem;
+      border-radius: 9px;
+      font-size: 0.85rem;
+      margin-bottom: 0.9rem;
+    }
+
+    @media (max-width: 960px) {
+      .app-shell { grid-template-columns: minmax(0, 1fr); }
+      .sidebar {
+        position: static;
+        height: auto;
+        padding: 0.8rem 0.9rem 0.6rem;
+        border-right: none;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+      }
+      .brand { padding-bottom: 0.7rem; }
+      .side-nav { flex-direction: row; flex-wrap: wrap; gap: 0.25rem; }
+      .nav-label { display: none; }
+      .nav-link { padding: 0.42rem 0.6rem; font-size: 0.82rem; }
+      .sidebar-foot { display: none; }
+      .topbar { padding: 0.7rem 1rem; }
+      main { padding: 1.1rem 1rem 3rem; }
+      .auth-wrap { grid-template-columns: minmax(0, 1fr); margin: 1.2rem auto; }
+      .auth-hero { padding: 1.7rem; gap: 1.2rem; }
+      .auth-form { padding: 1.7rem; }
+      .hero { padding: 1.5rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div>
-      <a href="/" class="brand">Order-to-Audit</a>
-      {% if user.is_authenticated %}
-        <a href="/">Home</a>
-        <a href="/masters/items/">Masters</a>
-        <a href="/masters/customers/">Customers</a>
-        {% if user.role != "salesman" %}
-          <a href="/inventory/">Stock</a>
-          <a href="/inventory/ledger/">Ledger</a>
-          <a href="/purchasing/">Purchases</a>
-          <a href="/production/">Production</a>
-        {% endif %}
-        {% block extra_nav %}{% endblock %}
-      {% endif %}
-    </div>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+      <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+      <symbol id="i-orders" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></symbol>
+      <symbol id="i-invoice" viewBox="0 0 24 24"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></symbol>
+      <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></symbol>
+      <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8.4v7.2a2 2 0 0 1-1 1.74l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 15.6V8.4a2 2 0 0 1 1-1.74l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8.4z"/><path d="m3.3 7.4 8.7 5 8.7-5M12 22V12.4"/></symbol>
+      <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+      <symbol id="i-truck" viewBox="0 0 24 24"><path d="M1 3h14v13H1zM15 8h4l3 3v5h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></symbol>
+      <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1.1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.14.5.55.9 1.05 1.05H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.95z"/></symbol>
+      <symbol id="i-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20M6 15h4"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15v3M12 10v8M17 6v12"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2 4 5.5v6c0 5 3.4 8.9 8 10.5 4.6-1.6 8-5.5 8-10.5v-6z"/><path d="m9 12 2 2 4-4"/></symbol>
+      <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.4"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11"/></symbol>
+      <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app-shell {% if not user.is_authenticated %}app-shell--plain{% endif %}">
     {% if user.is_authenticated %}
-      <div class="user-meta">
-        <span>{{ user.username }}</span>
-        <span class="badge">{{ user.get_role_display }}</span>
-        <form method="post" action="/logout/" style="margin:0;">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-secondary" style="padding:0.3rem 0.7rem;">Logout</button>
-        </form>
-      </div>
+      <aside class="sidebar">
+        <a href="/" class="brand">
+          <span class="brand-mark">OA</span>
+          <span class="brand-text">
+            <strong>Order-to-Audit</strong>
+            <small>Snack ERP</small>
+          </span>
+        </a>
+        <nav class="side-nav" aria-label="Main navigation">
+          <div class="nav-label">Overview</div>
+          <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
+            <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-home"/></svg>
+            Home
+          </a>
+          <a class="nav-link {% if request.path == '/reports/' %}active{% endif %}" href="/reports/">
+            <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-grid"/></svg>
+            Dashboard
+          </a>
+
+          <div class="nav-label">Sales</div>
+          <a class="nav-link {% if '/sales/orders/' in request.path %}active{% endif %}" href="/sales/orders/">
+            <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-orders"/></svg>
+            Orders
+          </a>
+          <a class="nav-link {% if '/sales/invoices/' in request.path %}active{% endif %}" href="/sales/invoices/">
+            <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-invoice"/></svg>
+            Invoices
+          </a>
+          {% if user.role == "salesman" or user.role == "admin" or user.is_superuser %}
+            <a class="nav-link {% if '/sales/pwa/' in request.path %}active{% endif %}" href="/sales/pwa/">
+              <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-phone"/></svg>
+              Field Capture
+            </a>
+          {% endif %}
+
+          {% if user.role != "salesman" %}
+            <div class="nav-label">Inventory</div>
+            <a class="nav-link {% if request.path == '/inventory/' %}active{% endif %}" href="/inventory/">
+              <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-box"/></svg>
+              Stock Summary
+            </a>
+            <a class="nav-link {% if '/inventory/ledger/' in request.path %}active{% endif %}" href="/inventory/ledger/">
+              <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-list"/></svg>
+              Stock Ledger
+            </a>
+
+            <div class="nav-label">Operations</div>
+            <a class="nav-link {% if '/purchasing/' in request.path %}active{% endif %}" href="/purchasing/">
+              <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-truck"/></svg>
+              Purchases
+            </a>
+            <a class="nav-link {% if '/production/' in request.path %}active{% endif %}" href="/production/">
+              <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-gear"/></svg>
+              Production
+            </a>
+
+            <div class="nav-label">Finance</div>
+            {% if user.role == "admin" or user.role == "auditor" or user.role == "owner" %}
+              <a class="nav-link {% if '/payments/' in request.path %}active{% endif %}" href="/payments/">
+                <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-card"/></svg>
+                Payments
+              </a>
+            {% endif %}
+            <a class="nav-link {% if '/reports/' in request.path and request.path != '/reports/' %}active{% endif %}" href="{% if user.role == 'production' %}/reports/production/{% else %}/reports/sales/{% endif %}">
+              <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chart"/></svg>
+              Reports
+            </a>
+          {% endif %}
+
+          <div class="nav-label">Data &amp; Governance</div>
+          <a class="nav-link {% if '/masters/items/' in request.path %}active{% endif %}" href="/masters/items/">
+            <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-tag"/></svg>
+            Items &amp; Prices
+          </a>
+          <a class="nav-link {% if '/masters/customers/' in request.path %}active{% endif %}" href="/masters/customers/">
+            <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-users"/></svg>
+            Customers
+          </a>
+          {% if user.role != "salesman" %}
+            <a class="nav-link {% if '/audit/' in request.path %}active{% endif %}" href="/audit/">
+              <svg class="ico" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shield"/></svg>
+              Audit Trail
+            </a>
+          {% endif %}
+        </nav>
+        <div class="sidebar-foot">
+          <div class="live"><span class="pulse-dot"></span>Ledger live</div>
+          Append-only stock movements and a full audit trail. Every balance is derived, never stored.
+        </div>
+      </aside>
     {% endif %}
-  </header>
-  <main>
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li class="{{ message.tags }}">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-    {% block content %}{% endblock %}
-  </main>
+
+    <div class="app-body">
+      <header class="topbar">
+        <div class="topbar-left">
+          {% if user.is_authenticated %}
+            <span class="crumb">Operations console</span>
+            <span class="muted">{% now "D, d M Y" %}</span>
+          {% else %}
+            <a href="/" class="brand-inline">
+              <span class="brand-mark brand-mark--sm">OA</span>
+              <span>Order-to-Audit</span>
+            </a>
+          {% endif %}
+        </div>
+        {% if user.is_authenticated %}
+          <div class="topbar-right">
+            <div class="user-meta">
+              <span class="avatar">{{ user.username|first|upper }}</span>
+              <span class="user-name">{{ user.username }}</span>
+              <span class="badge">{{ user.get_role_display }}</span>
+            </div>
+            <form method="post" action="/logout/">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-secondary btn-sm" title="Sign out">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-logout"/></svg>
+                Logout
+              </button>
+            </form>
+          </div>
+        {% else %}
+          <span class="badge">GST-ready ERP</span>
+        {% endif %}
+      </header>
+
+      <main>
+        {% if messages %}
+          <ul class="messages">
+            {% for message in messages %}
+              <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
 </body>
 </html>

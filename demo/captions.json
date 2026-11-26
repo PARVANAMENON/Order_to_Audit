@@ -1,0 +1,278 @@
+[
+  {
+    "scene": "01-title",
+    "at": 9.9,
+    "seconds": 6,
+    "text": "A snack factory in Tamil Nadu needs every order traced from sale to audit."
+  },
+  {
+    "scene": "01-title",
+    "at": 15.92,
+    "seconds": 6,
+    "text": "One Django app, five roles: salesman, admin, production, auditor and owner."
+  },
+  {
+    "scene": "01-title",
+    "at": 21.93,
+    "seconds": 5,
+    "text": "Everyone signs in to the same ledger — no spreadsheets in between."
+  },
+  {
+    "scene": "02-salesman",
+    "at": 45.01,
+    "seconds": 3,
+    "text": "Salesman A signs in. Every field order starts here."
+  },
+  {
+    "scene": "02-salesman",
+    "at": 48.33,
+    "seconds": 3,
+    "text": "Placing a 5,000-packet order for Retailer A in Tamil Nadu."
+  },
+  {
+    "scene": "02-salesman",
+    "at": 57.33,
+    "seconds": 6,
+    "text": "Instant stock check: 206 packets on hand, so this order is 4,794 short."
+  },
+  {
+    "scene": "02-salesman",
+    "at": 63.65,
+    "seconds": 4,
+    "text": "The field-capture PWA keeps working without a network. Orders queue on the device."
+  },
+  {
+    "scene": "02-salesman",
+    "at": 67.66,
+    "seconds": 3,
+    "text": "Network dropped — the app is now offline."
+  },
+  {
+    "scene": "02-salesman",
+    "at": 75.8,
+    "seconds": 5,
+    "text": "Saved locally with an idempotency key. Nothing is lost when the signal drops."
+  },
+  {
+    "scene": "02-salesman",
+    "at": 81.11,
+    "seconds": 5,
+    "text": "Back online: the queue replays through the idempotent API — no duplicates."
+  },
+  {
+    "scene": "03-masters",
+    "at": 121.03,
+    "seconds": 5,
+    "text": "Masters: items, HSN codes, GST rates and per-item variance tolerances."
+  },
+  {
+    "scene": "03-masters",
+    "at": 126.39,
+    "seconds": 5,
+    "text": "Table-driven conversions: kg to g, litre to ml, carton to packets."
+  },
+  {
+    "scene": "03-masters",
+    "at": 131.73,
+    "seconds": 6,
+    "text": "Customer state decides the tax: Tamil Nadu splits CGST + SGST; Karnataka uses IGST."
+  },
+  {
+    "scene": "03-masters",
+    "at": 137.74,
+    "seconds": 6,
+    "text": "The Murukku 200 g BOM plans 200 packets per batch, consumed line by line in production."
+  },
+  {
+    "scene": "04-admin",
+    "at": 185.22,
+    "seconds": 3,
+    "text": "Admin reviews the field order against live stock."
+  },
+  {
+    "scene": "04-admin",
+    "at": 188.55,
+    "seconds": 5,
+    "text": "5,000 requested, 206 available. Admin trims the approved quantity to 200."
+  },
+  {
+    "scene": "04-admin",
+    "at": 195.08,
+    "seconds": 4,
+    "text": "Approval checks stock coverage before it commits. The order is approved."
+  },
+  {
+    "scene": "04-admin",
+    "at": 199.51,
+    "seconds": 5,
+    "text": "Gapless financial-year invoice number. Intra-state supply splits 2.5% CGST + 2.5% SGST."
+  },
+  {
+    "scene": "04-admin",
+    "at": 204.52,
+    "seconds": 2,
+    "text": "The GST tax invoice is also a print-ready PDF."
+  },
+  {
+    "scene": "04-admin",
+    "at": 207.71,
+    "seconds": 2,
+    "text": "Zoomed in: HSN, quantity, rate, taxable value and the CGST/SGST split."
+  },
+  {
+    "scene": "04-admin",
+    "at": 209.73,
+    "seconds": 5,
+    "text": "ReportLab renders the same ledger numbers — no re-keying."
+  },
+  {
+    "scene": "04-admin",
+    "at": 215.27,
+    "seconds": 5,
+    "text": "Dispatch posts finished goods out of the ledger. Posted documents are never edited."
+  },
+  {
+    "scene": "04-admin",
+    "at": 220.57,
+    "seconds": 3,
+    "text": "A Rs 5,000 receipt auto-allocates FIFO to the oldest open invoices."
+  },
+  {
+    "scene": "04-admin",
+    "at": 229.49,
+    "seconds": 4,
+    "text": "Payment posted. Ageing buckets update immediately."
+  },
+  {
+    "scene": "04-admin",
+    "at": 234.09,
+    "seconds": 5,
+    "text": "Credit notes live here: they reverse revenue, tax and optionally stock — the invoice itself stays immutable."
+  },
+  {
+    "scene": "05-production",
+    "at": 260.69,
+    "seconds": 3,
+    "text": "The production supervisor starts a run from the Murukku BOM."
+  },
+  {
+    "scene": "05-production",
+    "at": 267.33,
+    "seconds": 3,
+    "text": "One batch: 200 packets planned from the BOM."
+  },
+  {
+    "scene": "05-production",
+    "at": 273.26,
+    "seconds": 4,
+    "text": "Actuals entered: 196 good packets, 4 wastage and 2 damaged pouches."
+  },
+  {
+    "scene": "05-production",
+    "at": 282.45,
+    "seconds": 4,
+    "text": "Raw material and packaging actuals are entered per BOM line."
+  },
+  {
+    "scene": "05-production",
+    "at": 286.92,
+    "seconds": 5,
+    "text": "Posted: raw stock out, finished goods in — all append-only ledger rows."
+  },
+  {
+    "scene": "05-production",
+    "at": 291.94,
+    "seconds": 6,
+    "text": "Cartons used 9 vs 10 planned: -10% variance, outside the 3% tolerance — flagged."
+  },
+  {
+    "scene": "05-production",
+    "at": 298.27,
+    "seconds": 5,
+    "text": "Every line shows planned vs actual, variance, tolerance and line cost."
+  },
+  {
+    "scene": "06-accountant",
+    "at": 336.7,
+    "seconds": 3,
+    "text": "The auditor works read-only: independent review, same data."
+  },
+  {
+    "scene": "06-accountant",
+    "at": 340.16,
+    "seconds": 6,
+    "text": "Run costing: weighted-average material cost, overhead, cost per packet and margin."
+  },
+  {
+    "scene": "06-accountant",
+    "at": 346.59,
+    "seconds": 4,
+    "text": "Sales register: invoice-level taxable value and the GST split."
+  },
+  {
+    "scene": "06-accountant",
+    "at": 351.06,
+    "seconds": 4,
+    "text": "CSV export downloads for the accountant; the app stays read-only."
+  },
+  {
+    "scene": "06-accountant",
+    "at": 355.46,
+    "seconds": 5,
+    "text": "GST summary: CGST, SGST and IGST collected for the period."
+  },
+  {
+    "scene": "06-accountant",
+    "at": 360.87,
+    "seconds": 6,
+    "text": "Stock ledger: every movement links back to its source document and the user who posted it."
+  },
+  {
+    "scene": "06-accountant",
+    "at": 367.33,
+    "seconds": 5,
+    "text": "Outstanding and ageing: 0–30 through 90+ day buckets."
+  },
+  {
+    "scene": "07-owner",
+    "at": 396.75,
+    "seconds": 4,
+    "text": "Owner dashboard: today's orders, pending approvals, flagged runs and receivables."
+  },
+  {
+    "scene": "07-owner",
+    "at": 401.18,
+    "seconds": 6,
+    "text": "Stock is never stored: every balance is SUM(StockLedger.qty) at weighted-average cost."
+  },
+  {
+    "scene": "07-owner",
+    "at": 407.21,
+    "seconds": 5,
+    "text": "Low-stock alerts and flagged production runs surface where the owner looks first."
+  },
+  {
+    "scene": "07-owner",
+    "at": 412.61,
+    "seconds": 6,
+    "text": "The audit trail is append-only: actor, action, before/after and timestamp for every write."
+  },
+  {
+    "scene": "07-owner",
+    "at": 418.99,
+    "seconds": 6,
+    "text": "Posted invoices are immutable. Corrections are credit notes — never silent edits."
+  },
+  {
+    "scene": "07-owner",
+    "at": 425.4,
+    "seconds": 4,
+    "text": "One ledger. One trail. Zero gaps."
+  },
+  {
+    "scene": "08-closing",
+    "at": 468.68,
+    "seconds": 4,
+    "text": "Built with Django 5, DRF, PostgreSQL and ReportLab; shipped in Docker."
+  }
+]

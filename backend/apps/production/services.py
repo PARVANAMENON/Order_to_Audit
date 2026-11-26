@@ -12,6 +12,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.accounts.models import User
+from apps.audit.services import log_action
 from apps.bom.models import BOM
 from apps.inventory.models import SourceType, StockLedger
 from apps.inventory.services import InsufficientStockError, balance, get_wac
@@ -296,5 +297,18 @@ def post_production_run(
             "posted_by",
             "posted_at",
         ]
+    )
+    log_action(
+        user=user,
+        model_name="ProductionRun",
+        object_id=locked_run.id,
+        action="repost_production_run" if repost else "post_production_run",
+        after={
+            "status": locked_run.status,
+            "material_cost": str(locked_run.material_cost),
+            "yield_variance_pct": str(locked_run.yield_variance_pct),
+            "yield_flagged": locked_run.yield_flagged,
+        },
+        notes=locked_run.run_number,
     )
     return locked_run

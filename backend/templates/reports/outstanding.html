@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Outstanding Report | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Outstanding Dues</h2>
+  <p class="muted">Unpaid amounts across active invoices, as of today.</p>
+  <table>
+    <thead><tr><th>Customer</th><th>State</th><th class="num">Outstanding (Rs)</th></tr></thead>
+    <tbody>
+    {% for row in rows %}
+      <tr>
+        <td>{{ row.customer.name }}</td>
+        <td>{{ row.customer.state }}</td>
+        <td class="num">{{ row.outstanding }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="3" class="muted">No outstanding dues.</td></tr>
+    {% endfor %}
+    <tr style="font-weight:bold;">
+      <td colspan="2">Total</td>
+      <td class="num">{{ total }}</td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

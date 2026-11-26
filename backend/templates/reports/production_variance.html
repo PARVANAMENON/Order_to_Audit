@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Production Variance | Order-to-Audit{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Production Variance Report</h2>
+  <form method="get" style="display:flex;gap:1rem;margin-bottom:1rem;">
+    <label>From <input type="date" name="date_from" value="{{ date_from }}"></label>
+    <label>To <input type="date" name="date_to" value="{{ date_to }}"></label>
+    <button type="submit" class="btn">Filter</button>
+  </form>
+  {% for run in runs %}
+  <div class="card" style="margin-top:1rem;">
+    <h3><a href="/production/{{ run.id }}/">{{ run.run_number }}</a> — {{ run.bom.product.name }} ({{ run.run_date }})</h3>
+    <p>Planned output: {{ run.expected_output }} | Actual: {{ run.actual_output }}</p>
+    <table>
+      <thead><tr><th>Item</th><th class="num">Planned</th><th class="num">Actual</th><th class="num">Variance %</th><th>Flagged</th></tr></thead>
+      <tbody>{% for line in run.run_lines.all %}
+        <tr {% if line.flagged %}style="background:#fff3cd;"{% endif %}>
+          <td>{{ line.item.name }}</td>
+          <td class="num">{{ line.planned_qty }}</td>
+          <td class="num">{{ line.actual_qty }}</td>
+          <td class="num">{{ line.variance_pct|floatformat:2 }}%</td>
+          <td>{% if line.flagged %}⚠️{% endif %}</td>
+        </tr>
+      {% endfor %}</tbody>
+    </table>
+  </div>
+  {% empty %}<p class="muted">No runs in this period.</p>{% endfor %}
+</div>
+{% endblock %}

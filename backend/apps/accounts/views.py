@@ -41,6 +41,16 @@ def landing_view(request: HttpRequest) -> HttpResponse:
                 "desc": "View assigned customers and GST details.",
                 "url": "/masters/customers/",
             },
+            {
+                "title": "My Orders",
+                "desc": "Place orders and track approval status.",
+                "url": "/sales/orders/",
+            },
+            {
+                "title": "Invoices",
+                "desc": "View invoices raised against your orders.",
+                "url": "/sales/invoices/",
+            },
         ],
         Role.ADMIN: [
             {
@@ -62,6 +72,31 @@ def landing_view(request: HttpRequest) -> HttpResponse:
                 "title": "Master Data",
                 "desc": "Items, unit conversions, customers, prices.",
                 "url": "/masters/items/",
+            },
+            {
+                "title": "Sales Orders",
+                "desc": "Approve or reject submitted orders.",
+                "url": "/sales/orders/",
+            },
+            {
+                "title": "Invoices & Dispatch",
+                "desc": "Raise GST invoices, dispatch, credit notes.",
+                "url": "/sales/invoices/",
+            },
+            {
+                "title": "Payments",
+                "desc": "Record receipts and review outstanding ageing.",
+                "url": "/payments/",
+            },
+            {
+                "title": "Reports",
+                "desc": "Sales register, GST, purchase & variance reports.",
+                "url": "/reports/",
+            },
+            {
+                "title": "Audit Log",
+                "desc": "Review every significant write action.",
+                "url": "/audit/",
             },
         ],
         Role.PRODUCTION: [
@@ -85,6 +120,16 @@ def landing_view(request: HttpRequest) -> HttpResponse:
                 "desc": "Post manual adjustments with reason.",
                 "url": "/inventory/adjust/",
             },
+            {
+                "title": "Production Reports",
+                "desc": "Yield and variance reporting.",
+                "url": "/reports/production/",
+            },
+            {
+                "title": "Audit Log",
+                "desc": "Review recorded write actions.",
+                "url": "/audit/",
+            },
         ],
         Role.AUDITOR: [
             {
@@ -107,6 +152,21 @@ def landing_view(request: HttpRequest) -> HttpResponse:
                 "desc": "Verify units, items, GST & prices.",
                 "url": "/masters/items/",
             },
+            {
+                "title": "Sales Register (Read-Only)",
+                "desc": "Inspect invoices, GST split & dispatch.",
+                "url": "/reports/sales/",
+            },
+            {
+                "title": "Outstanding & Payments",
+                "desc": "Verify dues and payment allocations.",
+                "url": "/payments/",
+            },
+            {
+                "title": "Audit Log",
+                "desc": "Independent review of all write actions.",
+                "url": "/audit/",
+            },
         ],
         Role.OWNER: [
             {
@@ -128,6 +188,21 @@ def landing_view(request: HttpRequest) -> HttpResponse:
                 "title": "Master Catalog",
                 "desc": "View items, customers, and prices.",
                 "url": "/masters/items/",
+            },
+            {
+                "title": "Dashboard & Reports",
+                "desc": "Orders, stock alerts, dues and registers.",
+                "url": "/reports/",
+            },
+            {
+                "title": "Invoices & Outstanding",
+                "desc": "Revenue, GST and receivables visibility.",
+                "url": "/sales/invoices/",
+            },
+            {
+                "title": "Audit Log",
+                "desc": "Read-only trail of significant actions.",
+                "url": "/audit/",
             },
         ],
     }
